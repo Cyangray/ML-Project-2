@@ -25,7 +25,7 @@ class sampling():
         self.variance = []
         design_matrix = fit(inst)
         whole_DM = design_matrix.create_design_matrix(deg = deg).copy() #design matrix for the whole dataset
-        whole_y = inst.z_1d.copy() #save the whole output
+        whole_y = inst.y_1d.copy() #save the whole output
         
         for i in range(self.inst.k):
             #pick the i-th set as test

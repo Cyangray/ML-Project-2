@@ -122,10 +122,10 @@ class data_generate():
         self.reload_data()
 
         self.test_x_1d = self.x_1d[testing, :]
-        self.test_y_1d = self.y_1d[testing, :]
+        self.test_y_1d = self.y_1d[testing]
         
         self.x_1d = self.x_1d[training, :]
-        self.y_1d = self.y_1d[training, :]
+        self.y_1d = self.y_1d[training]
         
         # Redefine lengths for training and testing.
         self.N = len(training)
