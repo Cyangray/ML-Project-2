@@ -18,8 +18,7 @@ def plot_features(dataset):
     
     for graph, i in enumerate(continuous_features_idxs):
         _, bins = np.histogram(dataset.data[:,i], bins =79-21)
-        ax[graph].hist(non_default[:,i], bins = bins, alpha = 0.5)
-        ax[graph].hist(default[:,i], bins = bins, alpha = 0.5)
+        ax[graph].hist([non_default[:,i], default[:,i]], bins = bins, stacked = True)
         ax[graph].set_title(dataset.feature_names[i])
         ax[graph].set_yticks(())
     ax[0].set_xlabel("Feature magnitude")
@@ -30,17 +29,17 @@ def plot_features(dataset):
     
     #Plot discrete features
     discrete_features_idxs = [1,2,3,5,6,7,8,9,10]
-    labels = [
-            ['Male', 'Female'],
-            ['Unknown', 'Grad. school', 'University', 'High school', 'Others', 'Unknown', 'Unknown'],
-            ['Unknown', 'Married', 'Single', 'Others'],
-            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
-            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
-            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
-            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
-            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
-            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months']
-            ]
+    '''labels = [
+            ('Male', 'Female'),
+            ('Unknown', 'Grad. school', 'University', 'High school', 'Others', 'Unknown', 'Unknown'),
+            ('Unknown', 'Married', 'Single', 'Others'),
+            ('Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'),
+            ('Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'),
+            ('Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'),
+            ('Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'),
+            ('Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'),
+            ('Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months')
+            ]'''
     
     fig, axes = plt.subplots(3,3,figsize=(10,20))
     ax = axes.ravel()
@@ -62,10 +61,10 @@ def plot_features(dataset):
         ax[graph].bar(uniques, countsdef, width, bottom = countsnondef)
         ax[graph].set_title(dataset.feature_names[i])
         ax[graph].set_yticks(())
-        #ax[graph].set_xticks(uniques[graph], labels[graph])
+        ax[graph].set_xticks(uniques)
     ax[0].set_ylabel("Frequency")
     ax[0].legend(["Non-default", "Default"], loc ="best")
-    fig.tight_layout()
+    #fig.tight_layout()
     plt.show()
 
 
