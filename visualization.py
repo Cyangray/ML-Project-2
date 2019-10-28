@@ -5,6 +5,72 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 import sys
 
+def plot_features(dataset):
+    
+    non_default = dataset.data[dataset.target == 0]
+    default = dataset.data[dataset.target == 1]
+    
+    #Plot continuous features
+    fig, axes = plt.subplots(7,2,figsize=(10,20))
+    ax = axes.ravel()
+    
+    continuous_features_idxs = [0,4,11,12,13,14,15,16,17,18,19,20,21,22]
+    
+    for graph, i in enumerate(continuous_features_idxs):
+        _, bins = np.histogram(dataset.data[:,i], bins =79-21)
+        ax[graph].hist(non_default[:,i], bins = bins, alpha = 0.5)
+        ax[graph].hist(default[:,i], bins = bins, alpha = 0.5)
+        ax[graph].set_title(dataset.feature_names[i])
+        ax[graph].set_yticks(())
+    ax[0].set_xlabel("Feature magnitude")
+    ax[0].set_ylabel("Frequency")
+    ax[0].legend(["Non-default", "Default"], loc ="best")
+    fig.tight_layout()
+    plt.show()
+    
+    #Plot discrete features
+    discrete_features_idxs = [1,2,3,5,6,7,8,9,10]
+    labels = [
+            ['Male', 'Female'],
+            ['Unknown', 'Grad. school', 'University', 'High school', 'Others', 'Unknown', 'Unknown'],
+            ['Unknown', 'Married', 'Single', 'Others'],
+            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
+            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
+            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
+            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
+            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months'],
+            ['Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months']
+            ]
+    
+    fig, axes = plt.subplots(3,3,figsize=(10,20))
+    ax = axes.ravel()
+    
+    width = 0.35
+    for graph, i in enumerate(discrete_features_idxs): #Loop through the features
+        uniques, _ = np.unique(dataset.data[:,i], return_counts=True)
+        uniquesdef, countsdef_1 = np.unique(default[:,i], return_counts=True)
+        uniquesnondef, countsnondef_1 = np.unique(non_default[:,i], return_counts=True)
+        countsdef = np.zeros(np.shape(uniques))
+        countsnondef = np.zeros(np.shape(uniques))
+        for i, un in enumerate(uniques): #For each feature, sort which is default and which is not
+            if un in uniquesdef:
+                countsdef[i] = countsdef_1[np.where(uniquesdef == un)]
+            if un in uniquesnondef:
+                countsnondef[i] = countsnondef_1[np.where(uniquesnondef == un)]
+
+        ax[graph].bar(uniques, countsnondef, width)
+        ax[graph].bar(uniques, countsdef, width, bottom = countsnondef)
+        ax[graph].set_title(dataset.feature_names[i])
+        ax[graph].set_yticks(())
+        #ax[graph].set_xticks(uniques[graph], labels[graph])
+    ax[0].set_ylabel("Frequency")
+    ax[0].legend(["Non-default", "Default"], loc ="best")
+    fig.tight_layout()
+    plt.show()
+
+
+
+
 
 def plot_3d(x, y, z, an_x, an_y, an_z, plot_type):
     fig = plt.figure()
