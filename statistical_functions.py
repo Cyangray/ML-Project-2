@@ -2,39 +2,39 @@ import numpy as np
 from sklearn.metrics import r2_score as r2
 
 
-def calc_MSE(z, z_tilde):
+def calc_MSE(y, y_tilde):
     mse = 0
-    n=len(z)
+    n=len(y)
     for i in range(n):
-        mse += (z[i] - z_tilde[i])**2
+        mse += (y[i] - y_tilde[i])**2
     return mse/n
 
 
-def calc_R2_score(z, z_tilde):
+def calc_R2_score(y, y_tilde):
     mse = 0
     ms_avg = 0
-    n=len(z)
-    mean_z = np.mean(z)
+    n=len(y)
+    mean_y = np.mean(y)
     for i in range(n):
-        mse += (z[i] - z_tilde[i])**2
-        ms_avg += (z[i] - mean_z)**2
+        mse += (y[i] - y_tilde[i])**2
+        ms_avg += (y[i] - mean_y)**2
     return 1. - mse/ms_avg
 
-def calc_R2_score_sklearn(z, z_tilde):
-    return r2(z, z_tilde)
+def calc_R2_score_sklearn(y, y_tilde):
+    return r2(y, y_tilde)
 
 
-def calc_statistics(z, z_tilde):
-    mse = calc_MSE(z, z_tilde)
-    calc_r2 = calc_R2_score(z, z_tilde)
+def calc_statistics(y, y_tilde):
+    mse = calc_MSE(y, y_tilde)
+    calc_r2 = calc_R2_score(y, y_tilde)
     return mse, calc_r2
 
-def calc_bias_variance(z, z_tilde):
+def calc_bias_variance(y, y_tilde):
     """ Calculate the bias and the variance of a given model"""
-    n = len(z)
-    Eztilde = np.mean(z_tilde)
-    bias = 1/n * np.sum((z - Eztilde)**2)
-    variance = 1/n * np.sum((z_tilde - Eztilde)**2)
+    n = len(y)
+    Eytilde = np.mean(y_tilde)
+    bias = 1/n * np.sum((y - Eytilde)**2)
+    variance = 1/n * np.sum((y_tilde - Eytilde)**2)
     return bias, variance
 
 def print_mse(mse):

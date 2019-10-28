@@ -16,17 +16,17 @@ class data_generate():
         self.noise = noise
         self.N = n*n #Number of datapoints (in a square meshgrid)
         self.input_variables = 2
-
-        self.x_mesh = np.meshgrid((np.random.uniform(0, 1, n), np.random.uniform(0, 1, n)))
-        self.y_mesh = franke_function(self.x_mesh[:,0], self.x_mesh[:,1])
         
-        self.x_1d = np.zeros((N, self.input_variables))
-        self.x_1d[:,0] = np.ravel(self.x_mesh[:,0])
-        self.x_1d[:,1] = np.ravel(self.x_mesh[:,1])
+        self.x0_mesh, self.x1_mesh = np.meshgrid(np.random.uniform(0, 1, n), np.random.uniform(0, 1, n))
+        self.y_mesh = franke_function(self.x0_mesh, self.x1_mesh)
+        
+        self.x_1d = np.zeros((self.N, self.input_variables))
+        self.x_1d[:,0] = np.ravel(self.x0_mesh)
+        self.x_1d[:,1] = np.ravel(self.x1_mesh)
         self.y_1d = np.ravel(self.y_mesh)
         
         if self.noise != 0:
-            self.z_1d += np.random.randn(n*n) * self.noise
+            self.y_1d += np.random.randn(n*n) * self.noise
 
     
     def normalize_dataset(self):
@@ -34,9 +34,9 @@ class data_generate():
         self.normalized = True
         self.x_unscaled = self.x_1d.copy()
         self.y_unscaled = self.y_1d.copy()
-        dataset_matrix = np.stack((self.x_1d, self.y_1d)).T
+        dataset_matrix = np.column_stack((self.x_1d, self.y_1d))
         self.scaler = preprocessing.StandardScaler().fit(dataset_matrix)
-        transformed_matrix = self.scaler.transform(dataset_matrix).T
+        transformed_matrix = self.scaler.transform(dataset_matrix)
         self.x_1d = transformed_matrix[:,:-1]
         self.y_1d = transformed_matrix[:,-1]
             
@@ -47,9 +47,9 @@ class data_generate():
             x = self.x_1d
         if isinstance(y, int):
             y = self.y_1d
-        dataset_matrix = np.stack((x, y))
-        rescaled_matrix = self.scaler.inverse_transform(dataset_matrix.T)
-        return rescaled_matrix.T
+        dataset_matrix = np.column_stack((x, y))
+        rescaled_matrix = self.scaler.inverse_transform(dataset_matrix)
+        return rescaled_matrix
     
     def load_terrain_data(self,terrain):
         """ Loads the terrain data for usage. """
