@@ -36,6 +36,17 @@ class dataset():
         self.x_1d = transformed_matrix[:,:-1]
         self.y_1d = transformed_matrix[:,-1]
         
+    def rescale_back(self, x=0, y=0):
+        """ After processing, the data must be scaled back to normal by scalers inverse_transform for mainly plotting purposes."""
+        self.normalized = False
+        if isinstance(x, int):
+            x = self.x_1d
+        if isinstance(y, int):
+            y = self.y_1d
+        dataset_matrix = np.column_stack((x, y))
+        rescaled_matrix = self.scaler.inverse_transform(dataset_matrix)
+        return rescaled_matrix
+        
 class credit_card_dataset(dataset):
     
     def __init__(self, filename):

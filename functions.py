@@ -1,6 +1,10 @@
 import numpy as np
 from math import floor
 
+def sigmoid(x):
+    # Activation function used to map any real value between 0 and 1
+    return 1 / (1 + np.exp(-x))
+
 def franke_function(x,y):
     """ Generate values for the franke function"""
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
