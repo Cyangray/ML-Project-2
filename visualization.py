@@ -3,32 +3,39 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
+import seaborn as sns
 import sys
 
 def plot_features(dataset):
     
-    non_default = dataset.data[dataset.target == 0]
-    default = dataset.data[dataset.target == 1]
+    targ0 = dataset.x_1d[dataset.y_1d == 0]
+    targ1 = dataset.x_1d[dataset.y_1d == 1]
+    cont_rows = dataset.cont_rows
+    cont_cols = dataset.cont_cols
+    disc_rows = dataset.disc_rows
+    disc_cols = dataset.disc_cols
+    contbins = dataset.contbins #79-21
+    output_labels = dataset.output_labels
     
     #Plot continuous features
-    fig, axes = plt.subplots(7,2,figsize=(10,20))
+    fig, axes = plt.subplots(cont_rows, cont_cols, figsize=(10,20))
     ax = axes.ravel()
     
-    continuous_features_idxs = [0,4,11,12,13,14,15,16,17,18,19,20,21,22]
+    continuous_features_idxs = dataset.continuous_features_idxs
     
     for graph, i in enumerate(continuous_features_idxs):
-        _, bins = np.histogram(dataset.data[:,i], bins =79-21)
-        ax[graph].hist([non_default[:,i], default[:,i]], bins = bins, stacked = True)
+        _, bins = np.histogram(dataset.x_1d[:,i], bins =contbins)
+        ax[graph].hist([targ0[:,i], targ1[:,i]], bins = bins, stacked = True)
         ax[graph].set_title(dataset.feature_names[i])
         ax[graph].set_yticks(())
     ax[0].set_xlabel("Feature magnitude")
     ax[0].set_ylabel("Frequency")
-    ax[0].legend(["Non-default", "Default"], loc ="best")
+    ax[0].legend(output_labels, loc ="best")
     fig.tight_layout()
     plt.show()
     
     #Plot discrete features
-    discrete_features_idxs = [1,2,3,5,6,7,8,9,10]
+    discrete_features_idxs = dataset.discrete_features_idxs
     '''labels = [
             ('Male', 'Female'),
             ('Unknown', 'Grad. school', 'University', 'High school', 'Others', 'Unknown', 'Unknown'),
@@ -41,34 +48,40 @@ def plot_features(dataset):
             ('Unknown_1', 'Pay duly', 'Unknown_2', 'Delay 1 month', 'Delay 2 months', 'Delay 3 months', 'Delay 4 months', 'Delay 5 months', 'Delay 6 months', 'Delay 7 months', 'Delay 8 months', 'Delay 9+ months')
             ]'''
     
-    fig, axes = plt.subplots(3,3,figsize=(10,20))
+    fig, axes = plt.subplots(disc_rows, disc_cols, figsize=(10,20))
     ax = axes.ravel()
     
     width = 0.35
     for graph, i in enumerate(discrete_features_idxs): #Loop through the features
-        uniques, _ = np.unique(dataset.data[:,i], return_counts=True)
-        uniquesdef, countsdef_1 = np.unique(default[:,i], return_counts=True)
-        uniquesnondef, countsnondef_1 = np.unique(non_default[:,i], return_counts=True)
-        countsdef = np.zeros(np.shape(uniques))
-        countsnondef = np.zeros(np.shape(uniques))
-        for i, un in enumerate(uniques): #For each feature, sort which is default and which is not
-            if un in uniquesdef:
-                countsdef[i] = countsdef_1[np.where(uniquesdef == un)]
-            if un in uniquesnondef:
-                countsnondef[i] = countsnondef_1[np.where(uniquesnondef == un)]
+        uniques, _ = np.unique(dataset.x_1d[:,i], return_counts=True)
+        uniquestarg1, countstarg1_1 = np.unique(targ1[:,i], return_counts=True)
+        uniquestarg0, countstarg0_1 = np.unique(targ0[:,i], return_counts=True)
+        countstarg1 = np.zeros(np.shape(uniques))
+        countstarg0 = np.zeros(np.shape(uniques))
+        for j, un in enumerate(uniques): #For each feature, sort which is default and which is not
+            if un in uniquestarg1:
+                countstarg1[j] = countstarg1_1[np.where(uniquestarg1 == un)]
+            if un in uniquestarg0:
+                countstarg0[j] = countstarg0_1[np.where(uniquestarg0 == un)]
 
-        ax[graph].bar(uniques, countsnondef, width)
-        ax[graph].bar(uniques, countsdef, width, bottom = countsnondef)
+        ax[graph].bar(uniques, countstarg0, width)
+        ax[graph].bar(uniques, countstarg1, width, bottom = countstarg0)
         ax[graph].set_title(dataset.feature_names[i])
         ax[graph].set_yticks(())
         ax[graph].set_xticks(uniques)
     ax[0].set_ylabel("Frequency")
-    ax[0].legend(["Non-default", "Default"], loc ="best")
+    ax[0].legend(output_labels, loc ="best")
     #fig.tight_layout()
     plt.show()
 
 
-
+def plot_correlation_matrix(normalized_dataset):
+    fig = plt.subplots()
+    correlation_matrix = normalized_dataset.df.corr().round(1)
+    # use the heatmap function from seaborn to plot the correlation matrix
+    # annot = True to print the values inside the square
+    sns.heatmap(data=correlation_matrix, annot=True)
+    plt.show()
 
 
 def plot_3d(x, y, z, an_x, an_y, an_z, plot_type):

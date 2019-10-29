@@ -27,6 +27,8 @@ class data_generate():
         
         if self.noise != 0:
             self.y_1d += np.random.randn(n*n) * self.noise
+            
+    
 
     
     def normalize_dataset(self):
