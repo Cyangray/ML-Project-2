@@ -13,6 +13,9 @@ k = 5
 method = 'logreg'
 deg = 0
 
+#Stochastic gradient descent parameters
+m = 5           #Number of minibatches
+
 #Importing the credit card dataset
 filename = "credit_card_data_set.xls"
 CDds = credit_card_dataset(filename)
@@ -38,7 +41,7 @@ CDds.sort_in_k_batches(k)
 # Run k-fold algorithm and fit models.
 sample = sampling(CDds)
 liste2 = [sample]
-sample.kfold_cross_validation(method, deg=deg, descent_method = 'SGD-skl')
+sample.kfold_cross_validation(method, deg=deg, descent_method = 'SGD', m = m)
 
 # Calculate statistics
 print("Batches: k = ", k)

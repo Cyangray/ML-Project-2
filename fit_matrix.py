@@ -40,7 +40,7 @@ class fit():
     def create_polynomial_design_matrix(self, x=0, N=0, deg=17):
         ''' Create a polynomial design matrix from a matrix of data. If x = 0, it will
         use the x_1d attribute of the imported dataset'''
-        print('jeg burde ikke være her (polynomial design matrix)')
+        
         if isinstance(x, int):
             x = self.inst.x_1d
             y = self.inst.y_1d
@@ -62,11 +62,11 @@ class fit():
         self.X = X
         return X
     
-    def fit_design_matrix_logistic_regression(self, descent_method = 'skl', eta = 0.000005, Niteration = 200, verbose = False):
+    def fit_design_matrix_logistic_regression(self, descent_method = 'skl', eta = 0.000005, Niteration = 200, m = 5, verbose = False):
         '''solve the model using logistic regression. 
         Method 'SGD-skl' for SGD scikit-learn,
         method 'GD' for plain gradient descent'''
-        print('jeg er her')
+        
         n, p = np.shape(self.X)
         if descent_method == 'SGD-skl':
             sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=0.1)
@@ -103,9 +103,42 @@ class fit():
             self.betas = beta
             self.y_tilde = self.X @ beta
             return self.y_tilde, self.betas
+        
         elif descent_method == 'SGD':
             #implement own stochastic gradient descent
-            pass
+            self.inst.sort_in_k_batches(m, random=True, minibatches = True)
+            
+            epochs = int(Niteration / m)
+            beta = np.ones((p, 1))
+            for epoch in range(1, epochs + 1):
+                for i in range(m):
+                    
+                    #Pick random minibatch
+                    minibatch_k = np.random.randint(m)
+                    minibatch_data_idxs = self.inst.m_idxs[minibatch_k]
+                    minibatch_data = self.inst.values[minibatch_data_idxs]
+                    minibatch_x_1d = minibatch_data[:,:-1]
+                    minibatch_y_1d = minibatch_data[:,-1]
+                    
+                    X = minibatch_x_1d
+                    y = minibatch_y_1d
+                    y_tilde_iter = X @ beta
+                    prob = sigmoid(y_tilde_iter)
+                    compl_prob = sigmoid(-y_tilde_iter)
+                    gradients =  - np.transpose(X) @ (y - prob)
+                    
+                    beta -= eta*gradients
+                    
+                    if verbose:
+                        # Cost function
+                        m = X.shape[0]
+                        #cost = -(1 / m) * np.sum(y * np.log(prob) + (1 - y) * np.log(compl_prob))
+                        cost = - (1 / m) * np.sum(y * y_tilde_iter + np.log(compl_prob))
+                        print('cost is', cost)
+            self.betas = beta
+            self.y_tilde = self.X @ beta
+            return self.y_tilde, self.betas
+        
         elif descent_method == 'SGD-minibatches':
             #implement own stochastic gradient descent with minibatches
             pass

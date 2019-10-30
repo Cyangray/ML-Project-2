@@ -9,7 +9,7 @@ class sampling():
     def __init__(self, inst):
         self.inst = inst
 
-    def kfold_cross_validation(self, method, descent_method='SGD-skl', deg=0, lambd=0.01):
+    def kfold_cross_validation(self, method, descent_method='SGD-skl', deg=0, lambd=0.01, m = 5):
         """Method that implements the k-fold cross-validation algorithm. It takes
         as input the method we want to use. if "least squares" an ordinary OLS will be evaulated.
         if "ridge" then the ridge method will be used, and respectively the same for "lasso"."""
@@ -41,7 +41,7 @@ class sampling():
             elif method == "lasso":
                 y_train, beta_train = self.design_matrix.fit_design_matrix_lasso(lambd)
             elif method == 'logreg':
-                y_train, beta_train = self.design_matrix.fit_design_matrix_logistic_regression(descent_method = descent_method)
+                y_train, beta_train = self.design_matrix.fit_design_matrix_logistic_regression(descent_method = descent_method, m = m)
                 
             else:
                 sys.exit("Wrongly designated method: ", method, " not found")
@@ -54,7 +54,6 @@ class sampling():
             y_test = inst.test_y_1d
             transformed_matrix = inst.rescale_back(x = inst.test_x_1d, y = inst.test_y_1d)
             y_test_rescaled = transformed_matrix[:,-1]
-            self.y_test_rescaled = y_test_rescaled
             self.y_test_rescaled_int = y_test_rescaled.astype(int)
             
             #Calculate the prediction for the whole dataset

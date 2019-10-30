@@ -49,16 +49,22 @@ class dataset():
         rescaled_matrix = self.scaler.inverse_transform(dataset_matrix)
         return rescaled_matrix
     
-    def sort_in_k_batches(self, k, random=True):
+    def sort_in_k_batches(self, k, random=True, minibatches = False):
         """ Sorts the data into k batches, i.e. prepares the data for k-fold cross
         validation. Recommended numbers are k = 3, 4 or 5. "random" sorts the
         dataset randomly. if random==False, it sorts them statistically"""
             
-        self.k = k
+        if minibatches:
+            self.m = k
+            self.m_idxs = [[] for i in range(k)]
+        else:
+            self.k = k
+            self.k_idxs = [[] for i in range(k)]
+            
         idx = 0
         N = self.N
         
-        self.k_idxs = [[] for i in range(k)]
+        
         limits = [i/k for i in range(k+1)]
         
         if random:
@@ -69,7 +75,10 @@ class dataset():
                 random_number = np.random.rand()
                 for i in range(k):
                     if limits[i] <= random_number < limits[i+1]:
-                        self.k_idxs[i].append(idx)
+                        if minibatches:
+                            self.m_idxs[i].append(idx)
+                        else:
+                            self.k_idxs[i].append(idx)
                         break
                 idx += 1
             
@@ -79,7 +88,10 @@ class dataset():
             np.random.shuffle(split)
             limits = [int(limits[i]*N) for i in range(limits)]
             for i in range(k):
-                self.k_idxs[i].append( split[limits[i] : limits[i+1]] )
+                if minibatches:
+                    self.m_idxs[i].append( split[limits[i] : limits[i+1]] )
+                else:
+                    self.k_idxs[i].append( split[limits[i] : limits[i+1]] )
                 
     def sort_training_test_kfold(self, i):
         """After sorting the dataset into k batches, pick one of them and this one 
@@ -110,6 +122,7 @@ class dataset():
         # Redefine lengths for training and testing.
         self.N = len(training)
         self.N_testing = len(testing)
+        
         
     def reload_data(self):
         """ Neat system for automatically make a backup of data sets if you resort. """
