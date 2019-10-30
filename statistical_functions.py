@@ -44,5 +44,23 @@ def print_mse(mse):
 def print_R2(R2):
     print("Average R2: ", np.average(R2))
     print("Best R2: ", R2[np.argmax(np.array(R2))])
+    
+def accuracy(target, y_tilde):
+    '''Take as input the modeled y_tilde and the correct values target, returns the
+    accuracy of the model'''
+    
+    y10 = np.zeros(np.shape(y_tilde))
+    right_guesses = 0
+    
+    for i, yi in enumerate(y_tilde):
+        if yi > 0:
+            y10[i] = 1
+        else:
+            y10[i] = 0
+        if y10[i] == target[i]:
+            right_guesses += 1
+            
+    accy = right_guesses / len(target)
+    return accy
 
 

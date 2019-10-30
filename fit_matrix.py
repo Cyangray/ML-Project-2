@@ -9,19 +9,46 @@ import statistical_functions as statistics
 class fit():
     def __init__(self, inst): 
         self.inst = inst
-
-    def create_polynomial_design_matrix(self, x=0, y=0, N=0, deg=17):
-        """ Function for creating a design X-matrix with rows [1, x, y, x^2, xy, xy^2 , etc.]
-        Input is x and y mesh or raveled mesh, keyword argument deg is the degree of the polynomial you want to fit. """
         
-        if type(x) == int:
+    def create_design_matrix(self, x = 0, N = 0, deg = 0):
+        """ Function for creating a design X-matrix.
+        if deg > 0, a polynomial matrix of degree 'deg' for two variables will be 
+        created, with rows [1, x, y, x^2, xy, xy^2 , etc.]
+        if deg == 0, a simple design matrix will be created. Useful for
+        big datasets.
+        Input for x is a dataset in the form of x_1d.
+        Keyword argument deg is the degree of the polynomial you want to fit. """
+        
+        if deg == 0:
+            X = self.create_simple_design_matrix(x = x)
+            return X
+        else:
+            print(deg)
+            X = self.create_polynomial_design_matrix(x = x, N = N, deg = deg)
+            return X
+
+    def create_simple_design_matrix(self, x = 0):
+        ''' Create simple design matrix from a matrix of data. If x = 0, it will
+        use the x_1d attribute of the imported dataset'''
+        
+        if isinstance(x, int):
+            self.X = self.inst.x_1d
+        else:
+            self.X = x
+        return self.X 
+        
+    def create_polynomial_design_matrix(self, x=0, N=0, deg=17):
+        ''' Create a polynomial design matrix from a matrix of data. If x = 0, it will
+        use the x_1d attribute of the imported dataset'''
+        print('jeg burde ikke være her (polynomial design matrix)')
+        if isinstance(x, int):
             x = self.inst.x_1d
             y = self.inst.y_1d
             N = self.inst.N
 
         self.x = x
         self.y = y
-
+        
         self.l = int((deg + 1)*(deg + 2) / 2)		# Number of elements in beta
         X = np.ones((N, self.l))
         
@@ -35,49 +62,53 @@ class fit():
         self.X = X
         return X
     
-    def create_simple_design_matrix(self, x = 0):
-        ''' Create simple design matrix from a matrix of data. If x = 0, it will
-        use the x_1d attribute of the imported dataset'''
-        
-        #ADD COLUMN OF ONES FOR INTERCEPT?
-        if isinstance(x, int):
-            self.X = self.inst.x_1d
-        else:
-            self.X = x
-    
-    def fit_design_matrix_logistic_regression(self, method = 'skl'):
-        '''solve the model using logistic regression. method 'skl' for SGD scikit-learn'''
+    def fit_design_matrix_logistic_regression(self, descent_method = 'skl', eta = 0.000005, Niteration = 200, verbose = False):
+        '''solve the model using logistic regression. 
+        Method 'SGD-skl' for SGD scikit-learn,
+        method 'GD' for plain gradient descent'''
+        print('jeg er her')
         n, p = np.shape(self.X)
-        if method == 'skl':
+        if descent_method == 'SGD-skl':
             sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=0.1)
-            sgdreg.fit(self.inst.x_1d, self.inst.y_1d.ravel())
+            sgdreg.fit(self.X, self.inst.y_1d.ravel())
             self.betas = sgdreg.coef_
             self.y_tilde = self.X@self.betas
+            if verbose:
+                # Cost function
+                m = self.X.shape[0]
+                #cost = -(1 / m) * np.sum(y * np.log(prob) + (1 - y) * np.log(compl_prob))
+                cost = - (1 / m) * np.sum(self.inst.y_1d.ravel() * self.y_tilde + np.log(sigmoid(-self.y_tilde)))
+                print('cost is', cost)
+                
             return self.y_tilde, sgdreg.coef_
-        else:
-            eta = 0.0001 # This is our eta
-            Niteration = 100
-            beta = np.random.randn(p, 1)
+        
+        elif descent_method == 'GD':
+            beta = np.ones((p, 1))
             X = self.X
             y = self.inst.y_1d[:, np.newaxis]
             for iter in range(Niteration):
-                exparg = X @ beta
-                
-                prob = sigmoid(exparg)
-                compl_prob = sigmoid(-exparg)
+                y_tilde_iter = X @ beta
+                prob = sigmoid(y_tilde_iter)
+                compl_prob = sigmoid(-y_tilde_iter)
                 gradients =  - np.transpose(X) @ (y - prob)
                 
                 beta -= eta*gradients
-                # Cost function
                 
-                m = X.shape[0]
-                cost = -(1 / m) * np.sum(y * np.log(prob) + (1 - y) * np.log(compl_prob))
-                #cost = - np.sum()
-                #cost = -np.sum(np.transpose(y) * np.log(prob) + np.transpose(1 - y) * np.log(compl_prob))
-                print('cost is', cost)
+                if verbose:
+                    # Cost function
+                    m = X.shape[0]
+                    #cost = -(1 / m) * np.sum(y * np.log(prob) + (1 - y) * np.log(compl_prob))
+                    cost = - (1 / m) * np.sum(y * y_tilde_iter + np.log(compl_prob))
+                    print('cost is', cost)
             self.betas = beta
             self.y_tilde = self.X @ beta
             return self.y_tilde, self.betas
+        elif descent_method == 'SGD':
+            #implement own stochastic gradient descent
+            pass
+        elif descent_method == 'SGD-minibatches':
+            #implement own stochastic gradient descent with minibatches
+            pass
     
     def fit_design_matrix_numpy(self):
         """Method that uses the design matrix to find the coefficients beta, and
