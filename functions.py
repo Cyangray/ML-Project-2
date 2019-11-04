@@ -1,6 +1,14 @@
 import numpy as np
 from math import floor
 
+def discretize(a):
+    discretized_a = np.zeros(np.shape(a))
+    for i, element in enumerate(a):
+        if element > 0:
+            discretized_a[i] = 1
+    return discretized_a
+            
+
 def sigmoid(x):
     # Activation function used to map any real value between 0 and 1
     return 1 / (1 + np.exp(-x))

@@ -1,6 +1,6 @@
 import numpy as np
-from sklearn.metrics import r2_score as r2
-
+from sklearn.metrics import r2_score, roc_auc_score
+from functions import discretize
 
 def calc_MSE(y, y_tilde):
     mse = 0
@@ -21,7 +21,7 @@ def calc_R2_score(y, y_tilde):
     return 1. - mse/ms_avg
 
 def calc_R2_score_sklearn(y, y_tilde):
-    return r2(y, y_tilde)
+    return r2_score(y, y_tilde)
 
 
 def calc_statistics(y, y_tilde):
@@ -45,7 +45,7 @@ def print_R2(R2):
     print("Average R2: ", np.average(R2))
     print("Best R2: ", R2[np.argmax(np.array(R2))])
     
-def accuracy(target, y_tilde):
+def calc_accuracy(target, y_tilde):
     '''Take as input the modeled y_tilde and the correct values target, returns the
     accuracy of the model'''
     
@@ -55,12 +55,13 @@ def accuracy(target, y_tilde):
     for i, yi in enumerate(y_tilde):
         if yi > 0:
             y10[i] = 1
-        else:
-            y10[i] = 0
         if y10[i] == target[i]:
             right_guesses += 1
             
     accy = right_guesses / len(target)
     return accy
+
+def calc_rocauc(target, y_tilde):
+    return roc_auc_score(target, y_tilde)
 
 

@@ -13,16 +13,21 @@ class dataset():
         nanDict = {}
         self.normalized = False
         self.resort = 0
-        self.df = pd.read_excel(filename, header = header, skiprows = skiprows, index_col = index_col, na_values=nanDict)
+        self.header = header
+        self.skiprows = skiprows
+        if filename != 0:
+            self.df = pd.read_excel(filename, header = header, skiprows = skiprows, index_col = index_col, na_values=nanDict)
+            self.pandas_df = True
+        else:
+            self.pandas_df = False
         
     '''Divide the DataFrame into data and target.'''
-    def polish_and_divide(self, targetcol = -1, headerrows = 0, headercols = 0):
-        self.values = np.copy(self.df.to_numpy())
-        if headerrows == 0:
-            self.df.feature_names = np.copy(self.df.columns)
-        else:
-            self.df.feature_names = self.iloc[headerrows-1]
-        self.feature_names = self.df.feature_names
+    def polish_and_divide(self, targetcol = -1, headercols = 0):
+        headerrows = self.header
+        if self.pandas_df:
+            self.values = np.copy(self.df.to_numpy())
+            self.feature_names = np.copy(self.df.columns)
+            
         self.x_1d = self.values[headercols: , headerrows : targetcol]
         self.y_1d = self.values[headercols: , targetcol]
         self.N = self.x_1d.shape[0]
@@ -38,8 +43,9 @@ class dataset():
         self.x_1d = transformed_matrix[:,:-1]
         self.y_1d = transformed_matrix[:,-1]
         
-    def rescale_back(self, x=0, y=0):
-        """ After processing, the data must be scaled back to normal by scalers inverse_transform for mainly plotting purposes."""
+    def rescale_back(self, x=0, y=0, split = False):
+        """ After processing, the data must be scaled back to normal by scalers 
+        inverse_transform for mainly plotting and validating purposes."""
         #self.normalized = False
         if isinstance(x, int):
             x = self.x_1d
@@ -47,8 +53,40 @@ class dataset():
             y = self.y_1d
         dataset_matrix = np.column_stack((x, y))
         rescaled_matrix = self.scaler.inverse_transform(dataset_matrix)
-        return rescaled_matrix
+        if split:
+            x_out = rescaled_matrix[:,:-1]
+            y_out = rescaled_matrix[:,-1]
+            return x_out, y_out
+        else:
+            return rescaled_matrix
     
+    def sort_train_test(self, ratio=0.2, random=True):
+        '''sorts the dataset into a training and a test set. Ratio is a number
+        between 0 and 1, giving the ratio of the test set'''
+        N_test = int(self.N*ratio)
+        self.training_indices = []
+        self.test_indices = []
+        
+        if random:
+            '''Loop all indexes, Generate a random number, see if it lies below
+            a treshold given by the ratio. if so, this will end up in the training set'''
+            idx = 0
+            for idx in range(self.N):
+                random_number = np.random.rand()
+                if random_number < ratio:
+                    self.test_indices.append(idx)
+                else:
+                    self.training_indices.append(idx)
+        else:
+            '''shuffles randomly and splits into train and test.'''
+            split = np.arange(self.N)
+            np.random.shuffle(split)
+            self.training_indices = split[N_test:]
+            self.test_indices = split[:N_test]
+            
+        self.fill_array_test_training()
+            
+        
     def sort_in_k_batches(self, k, random=True, minibatches = False):
         """ Sorts the data into k batches, i.e. prepares the data for k-fold cross
         validation. Recommended numbers are k = 3, 4 or 5. "random" sorts the
@@ -83,10 +121,11 @@ class dataset():
                 idx += 1
             
         else: 
-            '''Statistical sorting Lists int values, shuffles randomly and splits into k pieces.'''
+            '''Statistical sorting lists int values, shuffles randomly and splits into k pieces.'''
             split = np.arange(N)
             np.random.shuffle(split)
-            limits = [int(limits[i]*N) for i in range(limits)]
+            #exp_limits = [elem * N for elem in limits] 
+            limits = [int(elem*N) for elem in limits]
             for i in range(k):
                 if minibatches:
                     self.m_idxs[i].append( split[limits[i] : limits[i+1]] )
@@ -141,11 +180,11 @@ class credit_card_dataset(dataset):
     '''Child class of dataset, giving more methods, specific for the credit card
     dataset, with some hard-coded, dataset-specific values to give a neater experience in interface'''
     def __init__(self, filename):
-        super().__init__(filename, header = 1, skiprows = 0, index_col = 0)
+        super().__init__(filename, header = 0, skiprows = 1, index_col = 0)
     
     def CreditCardPolish(self):
         self.df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace=True)
-        super().polish_and_divide(headerrows = 0, headercols = 0)
+        super().polish_and_divide()
         
     def plot_setup(self):
         self.contbins = self.df['AGE'].max() - self.df['AGE'].min()

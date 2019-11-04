@@ -62,14 +62,18 @@ class fit():
         self.X = X
         return X
     
-    def fit_design_matrix_logistic_regression(self, descent_method = 'skl', eta = 0.000005, Niteration = 200, m = 5, verbose = False):
+    def fit_design_matrix_logistic_regression(self, descent_method = 'SGD-skl', eta = 0.000005, Niteration = 200, m = 5, verbose = False):
         '''solve the model using logistic regression. 
         Method 'SGD-skl' for SGD scikit-learn,
         method 'GD' for plain gradient descent'''
         
         n, p = np.shape(self.X)
-        if descent_method == 'SGD-skl':
-            sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=0.1)
+        if descent_method == 'skl-SGD':
+            if self.inst.normalized:
+                fit_intercept = False
+            else:
+                fit_intercept = True
+            sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=0.1, fit_intercept = fit_intercept)
             sgdreg.fit(self.X, self.inst.y_1d.ravel())
             self.betas = sgdreg.coef_
             self.y_tilde = self.X@self.betas
@@ -121,7 +125,7 @@ class fit():
                     minibatch_y_1d = minibatch_data[:,-1]
                     
                     X = minibatch_x_1d
-                    y = minibatch_y_1d
+                    y = minibatch_y_1d[:,np.newaxis]
                     y_tilde_iter = X @ beta
                     prob = sigmoid(y_tilde_iter)
                     compl_prob = sigmoid(-y_tilde_iter)
@@ -139,9 +143,6 @@ class fit():
             self.y_tilde = self.X @ beta
             return self.y_tilde, self.betas
         
-        elif descent_method == 'SGD-minibatches':
-            #implement own stochastic gradient descent with minibatches
-            pass
     
     def fit_design_matrix_numpy(self):
         """Method that uses the design matrix to find the coefficients beta, and
