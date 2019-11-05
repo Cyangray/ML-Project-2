@@ -108,9 +108,9 @@ else:
                                  lmbd = lmbd)
             ffnn.train()
             FFNN_numpy[i,j] = ffnn
-            y_tilde_train = ffnn.predict(X_train)
+            y_tilde_train = ffnn.predict_probabilities(X_train)
             
-            y_tilde = ffnn.predict(CDds.test_x_1d)
+            y_tilde = ffnn.predict_probabilities(CDds.test_x_1d)
             
             _, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
             target = [int(elem) for elem in target]

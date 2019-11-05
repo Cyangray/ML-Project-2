@@ -93,31 +93,38 @@ class NeuralNetwork:
         return probabilities
 
     def backpropagation(self):
-        
-        
+        # Check both the math, and make a scheme of the variables, how they effect each other. 
+        #This will also be useful for the report. Multilevel, and the trivial for
+        #only one hidden layer
+        last_layer = self.layers[-1]
         for i, current_layer in reversed(list(enumerate(self.layers))):
-            if i == len(self.layers):
+            
+            if current_layer == last_layer:
                 #last layer
                 error_output = current_layer.probabilities - self.Y_data
-                
+                last_layer.output_weights_gradient = np.matmul(last_layer.a_h.T, error_output)
+                last_layer.output_bias_gradient = np.sum(error_output, axis=0)
             else:
                 error_output = current_layer.probabilities - self.layers[i+1].error_hidden
                 
-            error_hidden = np.matmul(error_output, current_layer.output_weights.T) * current_layer.a_h * (1 - current_layer.a_h)
-            self.output_weights_gradient = np.matmul(self.a_h.T, error_output)
-            self.output_bias_gradient = np.sum(error_output, axis=0)
+            current_layer.error_hidden = np.matmul(error_output, current_layer.output_weights.T) * current_layer.a_h * (1 - current_layer.a_h)
+            
         
-            self.hidden_weights_gradient = np.matmul(self.X_data.T, error_hidden)
-            self.hidden_bias_gradient = np.sum(error_hidden, axis=0)
+            current_layer.hidden_weights_gradient = np.matmul(current_layer.a_h, current_layer.error_hidden)
+            #Previous line. Check that the first layer points to X_data when calling a_h
+            #current_layer.hidden_weights_gradient = np.matmul(current_layer.X_data.T, current_layer.error_hidden)
+            current_layer.hidden_bias_gradient = np.sum(current_layer.error_hidden, axis=0)
         
             if self.lmbd > 0.0:
-                self.output_weights_gradient += self.lmbd * self.output_weights
-                self.hidden_weights_gradient += self.lmbd * self.hidden_weights
-        
-            self.output_weights -= self.eta * self.output_weights_gradient
-            self.output_bias -= self.eta * self.output_bias_gradient
-            self.hidden_weights -= self.eta * self.hidden_weights_gradient
-            self.hidden_bias -= self.eta * self.hidden_bias_gradient
+                if current_layer == last_layer:
+                    current_layer.output_weights_gradient += self.lmbd * current_layer.output_weights
+                current_layer.hidden_weights_gradient += self.lmbd * current_layer.hidden_weights
+            
+            if current_layer == last_layer:
+                current_layer.output_weights -= self.eta * current_layer.output_weights_gradient
+                current_layer.output_bias -= self.eta * current_layer.output_bias_gradient
+            current_layer.hidden_weights -= self.eta * current_layer.hidden_weights_gradient
+            current_layer.hidden_bias -= self.eta * current_layer.hidden_bias_gradient
 
     def predict(self, X):
         probabilities = self.feed_forward_out(X)
