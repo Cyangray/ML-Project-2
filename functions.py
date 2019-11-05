@@ -7,7 +7,22 @@ def discretize(a):
         if element > 0:
             discretized_a[i] = 1
     return discretized_a
-            
+
+def make_onehot(a):
+    uniques = np.unique(a)
+    n_classes = len(uniques)
+    a_onehot = np.zeros((len(a),n_classes))
+    for i, elem in enumerate(a):
+        for j, unique in enumerate(uniques):
+            if elem == unique:
+                a_onehot[i,j] = 1
+    return a_onehot
+
+def inverse_onehot(a_onehot):
+    a = np.zeros(a_onehot.shape[0])
+    for i in range(len(a)):
+        a[i] = np.argmax(a_onehot[i,:])
+    return a
 
 def sigmoid(x):
     # Activation function used to map any real value between 0 and 1

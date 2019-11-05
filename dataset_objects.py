@@ -32,13 +32,14 @@ class dataset():
         self.y_1d = self.values[headercols: , targetcol]
         self.N = self.x_1d.shape[0]
         
-    def normalize_dataset(self):
+    def normalize_dataset(self, mean = False):
         ''' Uses the scikit-learn preprocessing tool for scaling the datasets. '''
         self.normalized = True
         self.x_1d_unscaled = self.x_1d.copy()
         self.y_1d_unscaled = self.y_1d.copy()
         dataset_matrix = self.values
-        self.scaler = preprocessing.StandardScaler().fit(dataset_matrix)
+        self.scaler = preprocessing.MinMaxScaler().fit(dataset_matrix)
+        #self.scaler = preprocessing.StandardScaler(with_mean = mean).fit(dataset_matrix)
         transformed_matrix = self.scaler.transform(dataset_matrix)
         self.x_1d = transformed_matrix[:,:-1]
         self.y_1d = transformed_matrix[:,-1]
@@ -80,6 +81,7 @@ class dataset():
         else:
             '''shuffles randomly and splits into train and test.'''
             split = np.arange(self.N)
+            #np.random.seed(5)
             np.random.shuffle(split)
             self.training_indices = split[N_test:]
             self.test_indices = split[:N_test]
@@ -182,8 +184,23 @@ class credit_card_dataset(dataset):
     def __init__(self, filename):
         super().__init__(filename, header = 0, skiprows = 1, index_col = 0)
     
-    def CreditCardPolish(self):
+    def CreditCardPolish(self, drop0 = True):
         self.df.rename(index=str, columns={"default payment next month": "defaultPaymentNextMonth"}, inplace=True)
+        if drop0:
+            self.df = self.df.drop(self.df[(self.df.BILL_AMT1 == 0) &
+                    (self.df.BILL_AMT2 == 0) &
+                    (self.df.BILL_AMT3 == 0) &
+                    (self.df.BILL_AMT4 == 0) &
+                    (self.df.BILL_AMT5 == 0) &
+                    (self.df.BILL_AMT6 == 0)].index)
+    
+            self.df = self.df.drop(self.df[(self.df.PAY_AMT1 == 0) &
+                    (self.df.PAY_AMT2 == 0) &
+                    (self.df.PAY_AMT3 == 0) &
+                    (self.df.PAY_AMT4 == 0) &
+                    (self.df.PAY_AMT5 == 0) &
+                    (self.df.PAY_AMT6 == 0)].index)
+        
         super().polish_and_divide()
         
     def plot_setup(self):

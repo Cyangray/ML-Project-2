@@ -13,12 +13,20 @@ liste = [CDds]
 #polishing the dataset, and divide into data and target data
 CDds.CreditCardPolish()
 
+unique, counts = np.unique(CDds.y_1d, return_counts=True)
+length = np.sum(counts)
+occurrences = dict(zip(unique, counts))
+print(occurrences)
+print('Percent of ', unique[0], ': ', occurrences[unique[0]]/length)
+print('Percent of ', unique[1], ': ', occurrences[unique[1]]/length)
+    
+
 #Plot features
-CDds.plot_setup()
-plot_features(CDds)
+#CDds.plot_setup()
+#plot_features(CDds)
 
 #Normalize dataset
-CDds.normalize_dataset()
+#CDds.normalize_dataset()
 
 #Plot correlation matrix
-plot_correlation_matrix(CDds)
+#plot_correlation_matrix(CDds)

@@ -14,7 +14,7 @@ from functions import discretize
 
 #k-fold cross validation parameters
 CV = False
-randomdataset = True
+randomdataset = False
 k = 5
 method = 'logreg'
 deg = 0
@@ -49,7 +49,7 @@ CDds.normalize_dataset()
 if CV:
     CDds.sort_in_k_batches(k)
 else:
-    CDds.sort_train_test(ratio = 0.2)
+    CDds.sort_train_test(ratio = 0.2, random = False)
 
 #Make model
 model = fit(CDds)
@@ -77,14 +77,17 @@ else:
     
     y_tilde_train, betas = model.fit_design_matrix_logistic_regression(descent_method = 'skl-SGD', Niteration = Niterations, m = m)
     _, target_train = CDds.rescale_back(x = CDds.x_1d, y = CDds.y_1d, split = True)
+    target_train = [int(elem) for elem in target_train]
     
     X_test = model.create_design_matrix(x = CDds.test_x_1d)
     y_tilde = model.test_design_matrix(betas, X = X_test)
     _, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
+    _, y_tilde_scaled = CDds.rescale_back(x = CDds.test_x_1d, y = y_tilde, split = True)
+    target = [int(elem) for elem in target]
     
     print('Number of epochs: ', int(Niterations/m))
-    print('Training set accuracy is: ', statistics.calc_accuracy(target_train, y_tilde_train))
-    print('Test set accuracy is: ', statistics.calc_accuracy(target, y_tilde))
+    print('Training set accuracy is: ', statistics.calc_accuracy(target_train, y_tilde_train, rescaled = True))
+    print('Test set accuracy is: ', statistics.calc_accuracy(target, y_tilde, rescaled = True))
     train_rocauc = roc_auc_score(target_train, y_tilde_train)
     test_rocauc = roc_auc_score(target, y_tilde)
     print('Training roc-auc score is: ', train_rocauc)

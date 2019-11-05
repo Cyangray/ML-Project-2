@@ -45,15 +45,19 @@ def print_R2(R2):
     print("Average R2: ", np.average(R2))
     print("Best R2: ", R2[np.argmax(np.array(R2))])
     
-def calc_accuracy(target, y_tilde):
+def calc_accuracy(target, y_tilde, rescaled = False):
     '''Take as input the modeled y_tilde and the correct values target, returns the
     accuracy of the model'''
-    
+    if rescaled:
+        threshold = 0.5
+    else:
+        threshold = 0
+        
     y10 = np.zeros(np.shape(y_tilde))
     right_guesses = 0
     
     for i, yi in enumerate(y_tilde):
-        if yi > 0:
+        if yi > threshold:
             y10[i] = 1
         if y10[i] == target[i]:
             right_guesses += 1
