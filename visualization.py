@@ -253,4 +253,37 @@ def plot_terrains(ind_var, ind_var_text, method, CV_text, x_matrices, x_labels, 
     ax2.legend()
     plt.show()
         
-        
+def show_heatmaps(lmbd_vals, eta_vals, train_accuracy, test_accuracy, train_rocauc, test_rocauc):
+
+    fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (17, 17), squeeze = True)
+    axs = axes.ravel()
+    sns.set()
+            
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(train_accuracy, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[0], cmap="viridis")
+    axs[0].set_title("Training Accuracy")
+    axs[0].set_ylabel("$\eta$")
+    axs[0].set_xlabel("$\lambda$")
+    #plt.show()
+    
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(test_accuracy, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[1], cmap="viridis")
+    axs[1].set_title("Test Accuracy")
+    axs[1].set_ylabel("$\eta$")
+    axs[1].set_xlabel("$\lambda$")
+    #plt.show()
+    
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(train_rocauc, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[2], cmap="viridis")
+    axs[2].set_title("Train ROC-AUC score")
+    axs[2].set_ylabel("$\eta$")
+    axs[2].set_xlabel("$\lambda$")
+    #plt.show()
+    
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(test_rocauc, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[3], cmap="viridis")
+    axs[3].set_title("Test ROC-AUC score")
+    axs[3].set_ylabel("$\eta$")
+    axs[3].set_xlabel("$\lambda$")
+    plt.tight_layout(h_pad = 2*1.08)
+    plt.show()

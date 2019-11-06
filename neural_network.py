@@ -40,9 +40,9 @@ class NeuralNetwork:
         if self.n_layers == 1:
             n_features = self.n_features
         else:
-            n_features = self.layers[-1].n_neurons
+            n_features = self.layers[-1].n_hidden_neurons
         
-        current_layer = layer(n_neurons, n_features = n_features, n_categories = self.n_categories)
+        current_layer = layer(n_neurons, n_features)
         self.layers.append(current_layer)
         
         #Initialize new layer
@@ -53,76 +53,80 @@ class NeuralNetwork:
         last_layer.output_weights = np.random.randn(last_layer.n_hidden_neurons, self.n_categories)
         last_layer.output_bias = np.zeros(self.n_categories) + 0.01
         
-    def feed_forward(self):
+    def feed_forward(self, X = 0, output = False):
         # feed-forward for training
         
-        #hidden layers
+        #Take X as input. If none is given, take the self.X_data
+        if isinstance(X, int):
+            X_start = self.X_data
+        else:
+            X_start = X
+        
+        #Loop through the layers and update the z_h and a_h
         for i, current_layer in enumerate(self.layers):
-            if i == 0:
-                #Input layer
-                current_layer.z_h = np.matmul(self.X_data, current_layer.hidden_weights) + current_layer.hidden_bias
-            else:
-                #hidden layer
-                prev_layer = self.layers[i-1]
-                current_layer.z_h = np.matmul(prev_layer.a_h, current_layer.hidden_weights) + current_layer.hidden_bias
-            
-            current_layer.a_h = sigmoid(current_layer.z_h)
-            
-            if i == len(self.layers):
-                #####FIKS HER####
+            if i == 0: #Input layer: take dataset as input
+                previous_a_h = X_start
+            else: #hidden layer: take a_h from the previous layer as input
+                previous_a_h = self.layers[i-1].a_h
                 
-                prev_layer.z_o = current_layer.z_h
-                exp_term = np.exp(prev_layer.z_o)
-                prev_layer.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
-            
-            if self.debug:
-                current_layer.saved_probs = current_layer.probabilities.copy()
-                self.debug = False
+            current_layer.z_h = np.matmul(previous_a_h, current_layer.hidden_weights) + current_layer.hidden_bias
+            current_layer.a_h = sigmoid(current_layer.z_h)
+        
+        ### Calculate the probabilities for the output
+        last_layer = self.layers[-1]
+        last_layer.z_o = np.matmul(last_layer.a_h, last_layer.output_weights) + last_layer.output_bias
+        exp_term = np.exp(last_layer.z_o)
+        last_layer.probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
+        
+        if output: #Print last layer's probabilities
+            return last_layer.probabilities
 
     def feed_forward_out(self, X):
         # feed-forward for output
-        last_layer = self.layers[-1]
-        z_h = np.matmul(X, last_layer.hidden_weights) + last_layer.hidden_bias
-        a_h = sigmoid(z_h)
-
-        z_o = np.matmul(a_h, last_layer.output_weights) + last_layer.output_bias
-        
-        exp_term = np.exp(z_o)
-        
-        probabilities = exp_term / np.sum(exp_term, axis=1, keepdims=True)
+        probabilities = self.feed_forward(X = X, output = True)
         return probabilities
 
     def backpropagation(self):
-        # Check both the math, and make a scheme of the variables, how they effect each other. 
-        #This will also be useful for the report. Multilevel, and the trivial for
-        #only one hidden layer
-        last_layer = self.layers[-1]
-        for i, current_layer in reversed(list(enumerate(self.layers))):
-            
-            if current_layer == last_layer:
-                #last layer
-                error_output = current_layer.probabilities - self.Y_data
-                last_layer.output_weights_gradient = np.matmul(last_layer.a_h.T, error_output)
-                last_layer.output_bias_gradient = np.sum(error_output, axis=0)
-            else:
-                error_output = current_layer.probabilities - self.layers[i+1].error_hidden
-                
-            current_layer.error_hidden = np.matmul(error_output, current_layer.output_weights.T) * current_layer.a_h * (1 - current_layer.a_h)
-            
+        #Backpropagating algorithm
         
-            current_layer.hidden_weights_gradient = np.matmul(current_layer.a_h, current_layer.error_hidden)
-            #Previous line. Check that the first layer points to X_data when calling a_h
-            #current_layer.hidden_weights_gradient = np.matmul(current_layer.X_data.T, current_layer.error_hidden)
+        # Calculate output error and the weights and bias gradients
+        last_layer = self.layers[-1]
+        error_output = last_layer.probabilities - self.Y_data
+        last_layer.output_weights_gradient = np.matmul(last_layer.a_h.T, error_output)
+        last_layer.output_bias_gradient = np.sum(error_output, axis=0)
+        
+        if self.lmbd > 0.0:
+            last_layer.output_weights_gradient += self.lmbd * last_layer.output_weights
+        
+        #Update the output weights and biases
+        last_layer.output_weights -= self.eta * last_layer.output_weights_gradient
+        last_layer.output_bias -= self.eta * last_layer.output_bias_gradient
+        
+        #Loop through the layers backwards in order to update the weights
+        for i, current_layer in reversed(list(enumerate(self.layers))):
+            #Check if we are evaluating the last or the first layer, as some variables will
+            #point to different things, similarly as with the feed_forward algorithm
+            if current_layer == last_layer:
+                forward_error = error_output
+                forward_weights = last_layer.output_weights
+            else:
+                forward_error = self.layers[i+1].error_hidden
+                forward_weights = self.layers[i+1].hidden_weights
+                
+            if current_layer == self.layers[0]:
+                previous_a_h = self.X_data
+            else:
+                previous_a_h = self.layers[i-1].a_h
+            
+            #calculate the error in the hidden weights, and update the gradients
+            current_layer.error_hidden = np.matmul(forward_error, forward_weights.T) * current_layer.a_h * (1 - current_layer.a_h)
+            current_layer.hidden_weights_gradient = np.matmul(previous_a_h.T, current_layer.error_hidden)
             current_layer.hidden_bias_gradient = np.sum(current_layer.error_hidden, axis=0)
         
             if self.lmbd > 0.0:
-                if current_layer == last_layer:
-                    current_layer.output_weights_gradient += self.lmbd * current_layer.output_weights
                 current_layer.hidden_weights_gradient += self.lmbd * current_layer.hidden_weights
             
-            if current_layer == last_layer:
-                current_layer.output_weights -= self.eta * current_layer.output_weights_gradient
-                current_layer.output_bias -= self.eta * current_layer.output_bias_gradient
+            #Update the weights and the biases
             current_layer.hidden_weights -= self.eta * current_layer.hidden_weights_gradient
             current_layer.hidden_bias -= self.eta * current_layer.hidden_bias_gradient
 
@@ -136,6 +140,7 @@ class NeuralNetwork:
         return probabilities
 
     def train(self):
+        self.close_last_layer()
         data_indices = np.arange(self.n_inputs)
 
         for i in range(self.epochs):
