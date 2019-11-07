@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn import preprocessing
 import sys
-
 from functions import franke_function
 
 class data_generate():

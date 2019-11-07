@@ -20,7 +20,26 @@ class dataset():
             self.pandas_df = True
         else:
             self.pandas_df = False
+    
+    def generate_franke(self, n, noise ):
+        """ Generate franke-data with randomised noise in a n*n random grid. """
+        self.n = n
+        self.noise = noise
+        self.N = n*n #Number of datapoints (in a square meshgrid)
+        self.input_variables = 2
         
+        self.x0_mesh, self.x1_mesh = np.meshgrid(np.random.uniform(0, 1, n), np.random.uniform(0, 1, n))
+        self.y_mesh = franke_function(self.x0_mesh, self.x1_mesh)
+        
+        self.x_1d = np.zeros((self.N, self.input_variables))
+        self.x_1d[:,0] = np.ravel(self.x0_mesh)
+        self.x_1d[:,1] = np.ravel(self.x1_mesh)
+        self.y_1d = np.ravel(self.y_mesh)
+        self.values = np.column_stack((self.x_1d, self.y_1d))
+        
+        if self.noise != 0:
+            self.y_1d += np.random.randn(n*n) * self.noise
+    
     '''Divide the DataFrame into data and target.'''
     def polish_and_divide(self, targetcol = -1, headercols = 0):
         headerrows = self.header

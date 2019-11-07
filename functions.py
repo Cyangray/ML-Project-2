@@ -24,9 +24,57 @@ def inverse_onehot(a_onehot):
         a[i] = np.argmax(a_onehot[i,:])
     return a
 
+def activation_function(x, activation):
+    ''' function that returns a sigmoid, a tanh, or a relu'''
+    if activation == 'sigmoid':
+        return sigmoid(x)
+    elif activation == 'softmax':
+        return softmax(x)
+    elif activation == 'linear':
+        return x
+    elif activation == 'tanh':
+        return np.tanh(x)
+    elif activation == 'relu':
+        return ReLU(x)
+    else:
+        print('unknown activation function')
+
+def der_activation_function(x, activation):
+    ''' derivatives of the activation functions'''
+    if activation == 'sigmoid':
+        return sigmoid(x)*(1 - sigmoid(x))
+    elif activation == 'softmax':
+        return softmax(x)*(1 - softmax(x))
+    elif activation == 'linear':
+        return 1
+    elif activation == 'tanh':
+        return 1 - np.tanh(x)**2
+    elif activation == 'relu':
+        return np.heaviside(x, 0)
+
+def ReLU(x):
+    return np.maximum(0,x)
+
 def sigmoid(x):
-    # Activation function used to map any real value between 0 and 1
+    # Sigmoid activation function used to map any real value between 0 and 1
     return 1 / (1 + np.exp(-x))
+
+def softmax(x):
+    exp_term = np.exp(x)
+    return exp_term / np.sum(exp_term, axis=1, keepdims=True)
+
+def cost_function(t, a, method):
+    if method == 'classification':
+        return -np.sum(t * np.log(a) + (1. - t) * np.log(1. - a))
+    elif method == 'regression':
+        return 0.5 * np.sum((t - a)**2)
+    
+def dCda(t, a, method):
+    if method == 'classification':
+        return (a - t)/(a * (1 - a))
+    elif method == 'regression':
+        return (a - t)
+    
 
 def franke_function(x,y):
     """ Generate values for the franke function"""

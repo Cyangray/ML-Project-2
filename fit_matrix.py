@@ -23,7 +23,6 @@ class fit():
             X = self.create_simple_design_matrix(x = x)
             return X
         else:
-            print(deg)
             X = self.create_polynomial_design_matrix(x = x, N = N, deg = deg)
             return X
 
@@ -43,11 +42,10 @@ class fit():
         
         if isinstance(x, int):
             x = self.inst.x_1d
-            y = self.inst.y_1d
             N = self.inst.N
 
         self.x = x
-        self.y = y
+        N = x.shape[0]
         
         self.l = int((deg + 1)*(deg + 2) / 2)		# Number of elements in beta
         X = np.ones((N, self.l))
@@ -124,7 +122,8 @@ class fit():
                     minibatch_x_1d = minibatch_data[:,:-1]
                     minibatch_y_1d = minibatch_data[:,-1]
                     
-                    X = minibatch_x_1d
+                    
+                    X = self.create_design_matrix(x = minibatch_x_1d, deg = deg)
                     y = minibatch_y_1d[:,np.newaxis]
                     y_tilde_iter = X @ beta
                     prob = sigmoid(y_tilde_iter)

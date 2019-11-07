@@ -7,7 +7,7 @@ from dataset_objects import dataset, credit_card_dataset
 from fit_matrix import fit
 import statistical_functions as statistics
 from sampling_methods import sampling
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn import datasets
 from functions import discretize, make_onehot, inverse_onehot
 from neural_network import NeuralNetwork, layer
@@ -18,7 +18,7 @@ CV = False
 k = 5
 
 #random dataset, or credit card?
-randomdataset = False
+randomdataset = True
 
 #Stochastic gradient descent parameters
 m = 20           #Number of minibatches
@@ -63,7 +63,7 @@ if not randomdataset:
 ###### grid search #######
 
 #Initialize vectors for saving values
-#eta_vals = np.logspace(-6, -1, 6)
+#eta_vals = np.logspace(-6, -1, 5)
 eta_vals = np.linspace(1e-5, 1e-3, 7)
 lmbd_vals = np.logspace(-5, 1, 7)
 FFNN_numpy = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
@@ -81,27 +81,29 @@ for i, eta in enumerate(eta_vals):
                              batch_size=int(n_samples/m), 
                              n_categories = 2, 
                              epochs = 100, 
-                             n_hidden_neurons = 50, 
+                             n_hidden_neurons = 9, 
                              eta = eta,
                              lmbd = lmbd)
-        ffnn.add_layer(50)
+        ffnn.add_layer(7)
         
         #Train network
         ffnn.train()
         
         #Save predictions
-        y_tilde_train = ffnn.predict_probabilities(X_train)
-        y_tilde_train_1d = ffnn.predict(X_train)
-        y_tilde = ffnn.predict_probabilities(CDds.test_x_1d)
-        y_tilde_1d = ffnn.predict(CDds.test_x_1d)
+        y_tilde_train = ffnn.predict(X_train)
+        y_tilde_train_1d = ffnn.predict_discrete(X_train)
+        y_tilde = ffnn.predict(CDds.test_x_1d)
+        y_tilde_1d = ffnn.predict_discrete(CDds.test_x_1d)
         
         #target for the test set
         _, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
         target = [int(elem) for elem in target]
         
         #Save prediction into exportable matrices
-        train_accuracy[i][j] = statistics.calc_accuracy(y_train, y_tilde_train_1d)
-        test_accuracy[i][j] = statistics.calc_accuracy(target, y_tilde_1d)
+        #train_accuracy[i][j] = statistics.calc_accuracy(y_train, y_tilde_train_1d)
+        #test_accuracy[i][j] = statistics.calc_accuracy(target, y_tilde_1d)
+        train_accuracy[i][j] = accuracy_score(y_train, y_tilde_train_1d)
+        test_accuracy[i][j] = accuracy_score(target, y_tilde_1d)
         train_rocauc[i][j] = roc_auc_score(y_train_onehot, y_tilde_train)
         test_rocauc[i][j] = roc_auc_score(make_onehot(target), y_tilde)
         
