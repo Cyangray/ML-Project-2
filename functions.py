@@ -70,10 +70,11 @@ def cost_function(t, a, method):
         return 0.5 * np.sum((t - a)**2)
     
 def dCda(t, a, method):
+    n = t.shape[0]
     if method == 'classification':
-        return (a - t)/(a * (1 - a))
+        return (a - t)/(a * (1 - a))/n
     elif method == 'regression':
-        return (a - t)
+        return (a - t)/n
     
 
 def franke_function(x,y):
@@ -109,3 +110,13 @@ def reduce4(A):
         B[i,:] = A[row, AtoB_columns] 
     
     return B
+'''
+def matmul(a,b):
+    """chunked matmul which converts datatypes and filters values too large to 127"""
+    c = np.empty((a.shape[0], b.shape[1]), dtype = np.int8) # output
+    for i in range(a.shape[0]): # iterate over rows in a 
+        aa = a[i].astype(np.int32) # convert one row to extended datatype
+        cc = aa @ b # broadcasting means cc is the dtype of aa 
+        cc[cc > 127] = 127 # set all future overflows to 127
+        c[i] = cc.astype(np.int8) # convert dtype back 
+    return c'''

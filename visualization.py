@@ -84,13 +84,14 @@ def plot_correlation_matrix(normalized_dataset):
     plt.show()
 
 
-def plot_3d(x, y, z, an_x, an_y, an_z, plot_type):
+def plot_3d(x, y, z, an_x, an_y, an_z):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.set_title("The franke function model and analytical solution.", fontsize=22)
     
     # Surface of analytical solution.
-    surf = ax.plot_surface(an_x, an_y, an_z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    #surf = ax.plot_trisurf(an_x, an_y, an_z, cmap=cm.coolwarm)
+    surf = ax.plot_surface(an_x, an_y, an_z, cmap=cm.coolwarm)
     surf_2 = ax.scatter(x, y, z)
 
     # Customize the z axis.
@@ -252,7 +253,42 @@ def plot_terrains(ind_var, ind_var_text, method, CV_text, x_matrices, x_labels, 
     ax2.grid('on')
     ax2.legend()
     plt.show()
-        
+
+def show_heatmap_mse_R2(lmbd_vals, eta_vals, train_mse, test_mse, train_R2, test_R2):
+    fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (17, 10), squeeze = True)
+    axs = axes.ravel()
+    sns.set()
+            
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(train_mse, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[0], cmap="viridis")
+    axs[0].set_title("Training MSE")
+    axs[0].set_ylabel("$\eta$")
+    axs[0].set_xlabel("$\lambda$")
+    #plt.show()
+    
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(test_mse, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[1], cmap="viridis")
+    axs[1].set_title("Test MSE")
+    axs[1].set_ylabel("$\eta$")
+    axs[1].set_xlabel("$\lambda$")
+    #plt.show()
+    
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(train_R2, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[2], cmap="viridis")
+    axs[2].set_title("Training R2 score")
+    axs[2].set_ylabel("$\eta$")
+    axs[2].set_xlabel("$\lambda$")
+    #plt.show()
+    
+    #fig, ax = plt.subplots(figsize = (10, 10))
+    sns.heatmap(test_R2, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[3], cmap="viridis")
+    axs[3].set_title("Test R2 score")
+    axs[3].set_ylabel("$\eta$")
+    axs[3].set_xlabel("$\lambda$")
+    plt.tight_layout(h_pad = 2*1.08)
+    plt.show()
+    
+    
 def show_heatmaps(lmbd_vals, eta_vals, train_accuracy, test_accuracy, train_rocauc, test_rocauc):
 
     fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (17, 17), squeeze = True)

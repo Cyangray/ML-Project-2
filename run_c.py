@@ -83,7 +83,10 @@ for i, eta in enumerate(eta_vals):
                              epochs = 100, 
                              n_hidden_neurons = 9, 
                              eta = eta,
-                             lmbd = lmbd)
+                             lmbd = lmbd,
+                             input_activation = 'sigmoid',
+                             output_activation = 'softmax',
+                             cost_function = 'classification')
         ffnn.add_layer(7)
         
         #Train network

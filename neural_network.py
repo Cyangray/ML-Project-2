@@ -1,5 +1,5 @@
 import numpy as np
-from functions import activation_function, der_activation_function, dCda
+from functions import activation_function, der_activation_function, dCda#, matmul
 
 class NeuralNetwork:
     def __init__(
@@ -16,6 +16,9 @@ class NeuralNetwork:
             input_activation = 'sigmoid',
             output_activation = 'softmax',
             cost_function = 'classification'):
+        '''input activation can take the values: 'sigmoid', 'softmax', 'linear',
+        'tanh' og 'relu'. The same for the output_activation.
+        cost_function can be for 'classification' purposes and for 'regression' purposes.'''
 
         self.X_data_full = X_data
         self.Y_data_full = Y_data
@@ -100,7 +103,7 @@ class NeuralNetwork:
         # function for the output layer
         last_layer = self.layers[-1]
         if ((last_layer.out_activation_method == 'softmax' or last_layer.out_activation_method == 'sigmoid') and self.C == 'classification') or (last_layer.out_activation_method == 'linear' and self.C == 'regression'):
-            error_output = last_layer.a_o - self.Y_data
+            error_output = (last_layer.a_o - self.Y_data)/self.Y_data.shape[0]
         else:
             error_output = last_layer.f_prime(last_layer.z_o, method = last_layer.out_activation_method) * dCda(self.Y_data, last_layer.a_o, method = self.C)
         
@@ -132,6 +135,7 @@ class NeuralNetwork:
                 previous_a_h = self.layers[i-1].a_h
             
             #calculate the error in the hidden weights, and update the gradients
+            #current_layer.error_hidden = np.matmul(forward_error, forward_weights.T) * current_layer.f_prime(current_layer.z_h)
             current_layer.error_hidden = np.matmul(forward_error, forward_weights.T) * current_layer.f_prime(current_layer.z_h)
             current_layer.hidden_weights_gradient = np.matmul(previous_a_h.T, current_layer.error_hidden)
             current_layer.hidden_bias_gradient = np.sum(current_layer.error_hidden, axis=0)
