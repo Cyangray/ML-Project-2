@@ -9,13 +9,14 @@ import statistical_functions as statistics
 from sampling_methods import sampling
 from sklearn.metrics import roc_auc_score
 from sklearn import datasets
-from functions import discretize, make_onehot, inverse_onehot
+from functions import make_onehot, inverse_onehot
 from neural_network import NeuralNetwork, layer
 import seaborn as sns
 
 #k-fold cross validation parameters
 CV = False
 k = 5
+np.random.seed(0)
 
 #Stochastic gradient descent parameters
 m = 20           #Number of minibatches

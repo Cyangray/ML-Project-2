@@ -27,7 +27,6 @@ class dataset():
         self.noise = noise
         self.N = n*n #Number of datapoints (in a square meshgrid)
         self.input_variables = 2
-        
         self.x0_mesh, self.x1_mesh = np.meshgrid(np.random.uniform(0, 1, n), np.random.uniform(0, 1, n))
         self.y_mesh = franke_function(self.x0_mesh, self.x1_mesh)
         
@@ -51,21 +50,26 @@ class dataset():
         self.y_1d = self.values[headercols: , targetcol]
         self.N = self.x_1d.shape[0]
         
-    def normalize_dataset(self, mean = False):
-        ''' Uses the scikit-learn preprocessing tool for scaling the datasets. '''
+    def normalize_dataset(self):
+        ''' Uses the scikit-learn preprocessing tool for scaling the datasets. 
+        Use the MinMaxScaler.'''
         self.normalized = True
         self.x_1d_unscaled = self.x_1d.copy()
         self.y_1d_unscaled = self.y_1d.copy()
         dataset_matrix = self.values
         self.scaler = preprocessing.MinMaxScaler().fit(dataset_matrix)
-        #self.scaler = preprocessing.StandardScaler(with_mean = mean).fit(dataset_matrix)
         transformed_matrix = self.scaler.transform(dataset_matrix)
         self.x_1d = transformed_matrix[:,:-1]
         self.y_1d = transformed_matrix[:,-1]
         
     def rescale_back(self, x=0, y=0, split = False):
         """ After processing, the data must be scaled back to normal by scalers 
-        inverse_transform for mainly plotting and validating purposes."""
+        inverse_transform for mainly plotting and validating purposes. If no x and y
+        are given, the scaled back version of the training set (if train-test
+        splitted) is returned.
+        The split argument is boolean, if True it returns the rescaled input and
+        output/target values separately. This is useful when for example one has
+        to only rescale a prediction."""
         #self.normalized = False
         if isinstance(x, int):
             x = self.x_1d

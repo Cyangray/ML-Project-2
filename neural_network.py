@@ -103,7 +103,7 @@ class NeuralNetwork:
         # function for the output layer
         last_layer = self.layers[-1]
         if ((last_layer.out_activation_method == 'softmax' or last_layer.out_activation_method == 'sigmoid') and self.C == 'classification') or (last_layer.out_activation_method == 'linear' and self.C == 'regression'):
-            error_output = (last_layer.a_o - self.Y_data)/self.Y_data.shape[0]
+            error_output = (last_layer.a_o - self.Y_data)
         else:
             error_output = last_layer.f_prime(last_layer.z_o, method = last_layer.out_activation_method) * dCda(self.Y_data, last_layer.a_o, method = self.C)
         
@@ -115,8 +115,9 @@ class NeuralNetwork:
             last_layer.output_weights_gradient += self.lmbd * last_layer.output_weights
         
         #Update the output weights and biases
-        last_layer.output_weights -= self.eta * last_layer.output_weights_gradient
-        last_layer.output_bias -= self.eta * last_layer.output_bias_gradient
+        eta = self.eta / self.batch_size
+        last_layer.output_weights -= eta * last_layer.output_weights_gradient
+        last_layer.output_bias -= eta * last_layer.output_bias_gradient
         
         #Loop through the layers backwards in order to update the weights
         for i, current_layer in reversed(list(enumerate(self.layers))):

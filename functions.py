@@ -1,14 +1,8 @@
 import numpy as np
 from math import floor
 
-def discretize(a):
-    discretized_a = np.zeros(np.shape(a))
-    for i, element in enumerate(a):
-        if element > 0:
-            discretized_a[i] = 1
-    return discretized_a
-
 def make_onehot(a):
+    '''takes a vector as input, and it returns it's onehot version as a numpy matrix'''
     uniques = np.unique(a)
     n_classes = len(uniques)
     a_onehot = np.zeros((len(a),n_classes))
@@ -16,16 +10,20 @@ def make_onehot(a):
         for j, unique in enumerate(uniques):
             if elem == unique:
                 a_onehot[i,j] = 1
+                break
     return a_onehot
 
 def inverse_onehot(a_onehot):
+    '''The inverse onehot, taking a onehot vector and giving it's 1D version'''
     a = np.zeros(a_onehot.shape[0])
     for i in range(len(a)):
         a[i] = np.argmax(a_onehot[i,:])
     return a
 
 def activation_function(x, activation):
-    ''' function that returns a sigmoid, a tanh, or a relu'''
+    ''' A collection of activation functions for an argument x. 
+    The activation argument can take the values 'sigmoid', 'softmax', 'linear',
+    'tanh' or 'relu'.'''
     if activation == 'sigmoid':
         return sigmoid(x)
     elif activation == 'softmax':
@@ -40,7 +38,8 @@ def activation_function(x, activation):
         print('unknown activation function')
 
 def der_activation_function(x, activation):
-    ''' derivatives of the activation functions'''
+    ''' derivatives of the activation functions in the above function. Same activation
+    parameters.'''
     if activation == 'sigmoid':
         return sigmoid(x)*(1 - sigmoid(x))
     elif activation == 'softmax':
@@ -53,32 +52,37 @@ def der_activation_function(x, activation):
         return np.heaviside(x, 0)
 
 def ReLU(x):
+    '''The ReLU activation function.'''
     return np.maximum(0,x)
 
 def sigmoid(x):
-    # Sigmoid activation function used to map any real value between 0 and 1
-    return 1 / (1 + np.exp(-x))
+    '''Sigmoid activation function used to map any real value between 0 and 1'''
+    return 1. / (1. + np.exp(-x))
 
 def softmax(x):
+    '''The softmax activation function.'''
     exp_term = np.exp(x)
     return exp_term / np.sum(exp_term, axis=1, keepdims=True)
 
 def cost_function(t, a, method):
-    if method == 'classification':
+    '''function that returns the cost function. Argument t is the target, while
+    a is the prediction.'''
+    if method == 'cross_entropy':
         return -np.sum(t * np.log(a) + (1. - t) * np.log(1. - a))
-    elif method == 'regression':
+    elif method == 'MSE':
         return 0.5 * np.sum((t - a)**2)
     
 def dCda(t, a, method):
-    n = t.shape[0]
-    if method == 'classification':
-        return (a - t)/(a * (1 - a))/n
-    elif method == 'regression':
-        return (a - t)/n
+    '''function that returns the derivatives of the cost function. Argument t is 
+    the target, while a is the prediction.'''
+    if method == 'cross_entropy':
+        return (a - t)/(a * (1 - a))
+    elif method == 'MSE':
+        return (a - t)
     
 
 def franke_function(x,y):
-    """ Generate values for the franke function"""
+    '''Generate values for the franke function'''
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
     term3 = 0.5*np.exp(-(9*x-7)**2/4.0 - 0.25*((9*y-3)**2))
@@ -86,12 +90,12 @@ def franke_function(x,y):
     return term1 + term2 + term3 + term4
 
 def is_odd(num):
-    """ Returns True if number is odd, False is even. Used for scaling data. """
+    '''Returns True if number is odd, False is even.'''
     return num & 0x1
 
 def reduce4(A):
-    """ Reduce the dimension of a matrix by four times, by only taking the first 
-    value of every second for both axis"""
+    '''Reduce the dimension of a matrix by four times, by only taking the first 
+    value of every second for both axis'''
     
     A_rows = np.size(A,0)
     A_columns = np.size(A,1)

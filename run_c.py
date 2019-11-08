@@ -1,7 +1,4 @@
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
 from visualization import plot_features, plot_correlation_matrix, show_heatmaps
 from dataset_objects import dataset, credit_card_dataset
 from fit_matrix import fit
@@ -9,13 +6,10 @@ import statistical_functions as statistics
 from sampling_methods import sampling
 from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn import datasets
-from functions import discretize, make_onehot, inverse_onehot
+from functions import make_onehot, inverse_onehot
 from neural_network import NeuralNetwork, layer
 import seaborn as sns
-
-#k-fold cross validation parameters
-CV = False
-k = 5
+import matplotlib.pyplot as plt
 
 #random dataset, or credit card?
 randomdataset = True
@@ -25,6 +19,7 @@ m = 20           #Number of minibatches
 Niterations = 1000
 n_samples = 100000      #Only for generation of random dataset
 
+np.random.seed(1234)
 
 if randomdataset:
     #generate random dataset
@@ -54,40 +49,49 @@ CDds.sort_train_test(ratio = 0.2, random = False)
 X_train = CDds.x_1d
 y_train = CDds.y_1d[:,np.newaxis]
 y_train_onehot = make_onehot(y_train)
-if not randomdataset:
-    n_samples = X_train.shape[0]
-
 
 
 
 ###### grid search #######
 
 #Initialize vectors for saving values
-#eta_vals = np.logspace(-6, -1, 5)
-eta_vals = np.linspace(1e-5, 1e-3, 7)
-lmbd_vals = np.logspace(-5, 1, 7)
+eta_vals = np.logspace(-6, 0, 7)
+#eta_vals = np.linspace(1e-5, 1e-1, 7) #7
+#lmbd_vals = np.logspace(-6, 0, 7) #7
+lmbd_vals = np.hstack((np.array([0]), np.logspace(-6, 0, 7)))
 FFNN_numpy = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
 train_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
 test_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
 train_rocauc = np.zeros((len(eta_vals), len(lmbd_vals)))
 test_rocauc = np.zeros((len(eta_vals), len(lmbd_vals)))
+train_area_ratio = np.zeros((len(eta_vals), len(lmbd_vals)))
+test_area_ratio = np.zeros((len(eta_vals), len(lmbd_vals)))
+
+#target for the test set
+_, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
+target = [int(elem) for elem in target]
+
+#Prepare for calculating the Area ratio metric
+max_area_train = statistics.calc_cumulative_auc(y_train, y_train_onehot)
+max_area_test = statistics.calc_cumulative_auc(target, make_onehot(target))
 
 #Loop through the etas and lambdas
 for i, eta in enumerate(eta_vals):
     for j, lmbd in enumerate(lmbd_vals):
+        
         #Make neural network
         ffnn = NeuralNetwork(X_train, 
                              y_train_onehot, 
-                             batch_size=int(n_samples/m), 
+                             batch_size = int(X_train.shape[0]/m), 
                              n_categories = 2, 
                              epochs = 100, 
-                             n_hidden_neurons = 9, 
+                             n_hidden_neurons = 20, 
                              eta = eta,
                              lmbd = lmbd,
                              input_activation = 'sigmoid',
                              output_activation = 'softmax',
                              cost_function = 'classification')
-        ffnn.add_layer(7)
+        ffnn.add_layer(20, activation_method = 'sigmoid')
         
         #Train network
         ffnn.train()
@@ -98,26 +102,31 @@ for i, eta in enumerate(eta_vals):
         y_tilde = ffnn.predict(CDds.test_x_1d)
         y_tilde_1d = ffnn.predict_discrete(CDds.test_x_1d)
         
-        #target for the test set
-        _, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
-        target = [int(elem) for elem in target]
-        
-        #Save prediction into exportable matrices
-        #train_accuracy[i][j] = statistics.calc_accuracy(y_train, y_tilde_train_1d)
-        #test_accuracy[i][j] = statistics.calc_accuracy(target, y_tilde_1d)
+        #Save predictions into exportable matrices
         train_accuracy[i][j] = accuracy_score(y_train, y_tilde_train_1d)
         test_accuracy[i][j] = accuracy_score(target, y_tilde_1d)
         train_rocauc[i][j] = roc_auc_score(y_train_onehot, y_tilde_train)
         test_rocauc[i][j] = roc_auc_score(make_onehot(target), y_tilde)
+        train_area_ratio[i][j] = (statistics.calc_cumulative_auc(y_train, y_tilde_train) - 0.5)/(max_area_train - 0.5)
+        test_area_ratio[i][j] = (statistics.calc_cumulative_auc(target, y_tilde) - 0.5)/(max_area_test - 0.5)
         
-        #print some outputs
+        #print some outputs for each run of the loop
         print('Learning rate: ', eta)
         print('lambda: ', lmbd)
         print('rocauc: ', test_rocauc[i][j])
+        print('Area ratio: ', test_area_ratio[i][j])
         print('accuracy: ', test_accuracy[i][j])
         print('\n')
             
             
 #Visualization        
-show_heatmaps(lmbd_vals, eta_vals, train_accuracy, test_accuracy, train_rocauc, test_rocauc)
+show_heatmaps(lmbd_vals, 
+              eta_vals, 
+              train_accuracy, 
+              test_accuracy, 
+              train_rocauc, 
+              test_rocauc, 
+              train_area_ratio, 
+              test_area_ratio)
+
 

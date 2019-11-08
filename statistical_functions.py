@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import r2_score, roc_auc_score
-from functions import discretize
+import scikitplot as skplt
 
 def calc_MSE(y, y_tilde):
     mse = 0
@@ -36,6 +36,13 @@ def calc_bias_variance(y, y_tilde):
     bias = 1/n * np.sum((y - Eytilde)**2)
     variance = 1/n * np.sum((y_tilde - Eytilde)**2)
     return bias, variance
+
+def calc_cumulative_auc(target, pred):
+    '''calculate the area under the cumulative chart'''
+    x_data, y_data = skplt.helpers.cumulative_gain_curve(target, pred[:,1])
+    area = np.trapz(y_data, x = x_data)
+    return area
+    
 
 def print_mse(mse):
     print("Average mse: ", np.average(mse))

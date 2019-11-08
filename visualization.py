@@ -289,37 +289,49 @@ def show_heatmap_mse_R2(lmbd_vals, eta_vals, train_mse, test_mse, train_R2, test
     plt.show()
     
     
-def show_heatmaps(lmbd_vals, eta_vals, train_accuracy, test_accuracy, train_rocauc, test_rocauc):
+def show_heatmaps(lmbd_vals, eta_vals, train_accuracy, test_accuracy, train_rocauc, test_rocauc, train_area_ratio, test_area_ratio):
 
-    fig, axes = plt.subplots(nrows = 2, ncols = 2, figsize = (17, 17), squeeze = True)
+    fig, axes = plt.subplots(nrows = 3, ncols = 2, 
+                             figsize = (14, 17), 
+                             squeeze = True)
     axs = axes.ravel()
     sns.set()
-            
-    #fig, ax = plt.subplots(figsize = (10, 10))
-    sns.heatmap(train_accuracy, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[0], cmap="viridis")
+    #labelx = np.log10(lmbd_vals)
+    labelx = lmbd_vals
+    labely = np.log10(eta_vals)
+    #labelx_text = "$\log_{10} \lambda$"
+    labelx_text = "$\lambda$"
+    labely_text = "$\log_{10} \eta$"
+    
+    sns.heatmap(train_accuracy, xticklabels=labelx, yticklabels=labely, annot=True, ax=axs[0], cmap="viridis")
     axs[0].set_title("Training Accuracy")
-    axs[0].set_ylabel("$\eta$")
-    axs[0].set_xlabel("$\lambda$")
-    #plt.show()
+    axs[0].set_ylabel(labely_text)
+    axs[0].set_xlabel(labelx_text)
     
-    #fig, ax = plt.subplots(figsize = (10, 10))
-    sns.heatmap(test_accuracy, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[1], cmap="viridis")
+    sns.heatmap(test_accuracy, xticklabels=labelx, yticklabels=labely, annot=True, ax=axs[1], cmap="viridis")
     axs[1].set_title("Test Accuracy")
-    axs[1].set_ylabel("$\eta$")
-    axs[1].set_xlabel("$\lambda$")
-    #plt.show()
+    axs[1].set_ylabel(labely_text)
+    axs[1].set_xlabel(labelx_text)
     
-    #fig, ax = plt.subplots(figsize = (10, 10))
-    sns.heatmap(train_rocauc, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[2], cmap="viridis")
+    sns.heatmap(train_rocauc, xticklabels=labelx, yticklabels=labely, annot=True, ax=axs[2], cmap="viridis")
     axs[2].set_title("Train ROC-AUC score")
-    axs[2].set_ylabel("$\eta$")
-    axs[2].set_xlabel("$\lambda$")
-    #plt.show()
+    axs[2].set_ylabel(labely_text)
+    axs[2].set_xlabel(labelx_text)
     
-    #fig, ax = plt.subplots(figsize = (10, 10))
-    sns.heatmap(test_rocauc, xticklabels=lmbd_vals, yticklabels=eta_vals, annot=True, ax=axs[3], cmap="viridis")
+    sns.heatmap(test_rocauc, xticklabels=labelx, yticklabels=labely, annot=True, ax=axs[3], cmap="viridis")
     axs[3].set_title("Test ROC-AUC score")
-    axs[3].set_ylabel("$\eta$")
-    axs[3].set_xlabel("$\lambda$")
+    axs[3].set_ylabel(labely_text)
+    axs[3].set_xlabel(labelx_text)
+    
+    sns.heatmap(train_area_ratio, xticklabels=labelx, yticklabels=labely, annot=True, ax=axs[4], cmap="viridis")
+    axs[4].set_title("Train area ratio")
+    axs[4].set_ylabel(labely_text)
+    axs[4].set_xlabel(labelx_text)
+    
+    sns.heatmap(test_area_ratio, xticklabels=labelx, yticklabels=labely, annot=True, ax=axs[5], cmap="viridis")
+    axs[5].set_title("Test area ratio")
+    axs[5].set_ylabel(labely_text)
+    axs[5].set_xlabel(labelx_text)
+    
     plt.tight_layout(h_pad = 2*1.08)
     plt.show()

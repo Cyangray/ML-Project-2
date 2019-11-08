@@ -2,7 +2,7 @@ import numpy as np
 import sys
 from sklearn import preprocessing
 from sklearn.linear_model import Lasso, SGDRegressor
-from functions import sigmoid
+from functions import sigmoid, softmax
 
 import statistical_functions as statistics
 
@@ -60,7 +60,7 @@ class fit():
         self.X = X
         return X
     
-    def fit_design_matrix_logistic_regression(self, descent_method = 'SGD-skl', eta = 0.000005, Niteration = 200, m = 5, verbose = False):
+    def fit_design_matrix_logistic_regression(self, descent_method = 'SGD-skl', eta = 0.001, Niteration = 200, m = 5, verbose = False):
         '''solve the model using logistic regression. 
         Method 'SGD-skl' for SGD scikit-learn,
         method 'GD' for plain gradient descent'''
@@ -71,10 +71,10 @@ class fit():
                 fit_intercept = False
             else:
                 fit_intercept = True
-            sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=0.1, fit_intercept = fit_intercept)
+            sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=eta, fit_intercept = fit_intercept)
             sgdreg.fit(self.X, self.inst.y_1d.ravel())
             self.betas = sgdreg.coef_
-            self.y_tilde = self.X@self.betas
+            self.y_tilde = sigmoid(self.X@self.betas)
             if verbose:
                 # Cost function
                 m = self.X.shape[0]
@@ -103,7 +103,7 @@ class fit():
                     cost = - (1 / m) * np.sum(y * y_tilde_iter + np.log(compl_prob))
                     print('cost is', cost)
             self.betas = beta
-            self.y_tilde = self.X @ beta
+            self.y_tilde = sigmoid(self.X @ beta)
             return self.y_tilde, self.betas
         
         elif descent_method == 'SGD':
@@ -123,14 +123,14 @@ class fit():
                     minibatch_y_1d = minibatch_data[:,-1]
                     
                     
-                    X = self.create_design_matrix(x = minibatch_x_1d, deg = deg)
+                    X = minibatch_x_1d
                     y = minibatch_y_1d[:,np.newaxis]
                     y_tilde_iter = X @ beta
                     prob = sigmoid(y_tilde_iter)
                     compl_prob = sigmoid(-y_tilde_iter)
-                    gradients =  - np.transpose(X) @ (y - prob)
+                    gradients =  - X.T @ (y - prob)
                     
-                    beta -= eta*gradients
+                    beta -= eta*gradients * 2./len(y_tilde_iter)
                     
                     if verbose:
                         # Cost function
@@ -139,7 +139,7 @@ class fit():
                         cost = - (1 / m) * np.sum(y * y_tilde_iter + np.log(compl_prob))
                         print('cost is', cost)
             self.betas = beta
-            self.y_tilde = self.X @ beta
+            self.y_tilde = sigmoid(self.X @ beta)
             return self.y_tilde, self.betas
         
     

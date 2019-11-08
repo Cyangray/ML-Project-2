@@ -1,28 +1,27 @@
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import copy
-from visualization import plot_features, plot_correlation_matrix
+from functions import make_onehot, softmax, sigmoid
 from dataset_objects import dataset, credit_card_dataset
 from fit_matrix import fit
 import statistical_functions as statistics
 from sampling_methods import sampling
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn import datasets
-from functions import discretize
 
 
 #k-fold cross validation parameters
-CV = False
-randomdataset = False
+CV = True
 k = 5
 method = 'logreg'
 deg = 0
 
 #Stochastic gradient descent parameters
-m = 5           #Number of minibatches
-Niterations = 1000
+m = 20           #Number of minibatches
+Niterations = 5000
 
+#Random dataset or Credit card?
+randomdataset = False
+
+np.random.seed(1234)
 
 
 if randomdataset:
@@ -61,37 +60,44 @@ if CV:
     # Run k-fold CV algorithm and fit models.
     sample = sampling(CDds)
     liste2 = [sample]
-    sample.kfold_cross_validation(method, deg=deg, descent_method = 'skl-SGD', Niterations = Niterations, m = m)
-    # Calculate statistics and write output
+    sample.kfold_cross_validation(method, deg=deg, descent_method = 'GD', eta = 0.1, Niterations = Niterations, m = m)
+    
+    # Print metrics
     print('Number of epochs: ', int(Niterations/m))
     print("Cross-validation batches: k = ", k)
-    statistics.print_mse(sample.mse)
-    statistics.print_R2(sample.R2)
-    
-    #print accuracy
+    print('Best accuracy is in arg ', np.argmax(sample.accuracy), ' : ', max(sample.accuracy))
+    print('Best roc-auc score is in arg ', np.argmax(sample.rocaucs),' : ', max(sample.rocaucs))
+    print('Best area ratio is in arg ', np.argmax(sample.area_ratios),' : ', max(sample.area_ratios), '\n')
     print('accuracy is: ', sample.accuracy)
     print('roc-auc score is: ', sample.rocaucs)
+    print('Area ratio is: ', sample.area_ratios, '\n')
     
 else:
     #Dont run k-fold CV
     
-    y_tilde_train, betas = model.fit_design_matrix_logistic_regression(descent_method = 'skl-SGD', Niteration = Niterations, m = m)
+    y_tilde_train, betas = model.fit_design_matrix_logistic_regression(descent_method = 'GD', eta = 0.1, Niteration = Niterations, m = m)
     _, target_train = CDds.rescale_back(x = CDds.x_1d, y = CDds.y_1d, split = True)
     target_train = [int(elem) for elem in target_train]
     
     X_test = model.create_design_matrix(x = CDds.test_x_1d)
-    y_tilde = model.test_design_matrix(betas, X = X_test)
+    y_tilde = sigmoid(model.test_design_matrix(betas, X = X_test))
     _, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
     _, y_tilde_scaled = CDds.rescale_back(x = CDds.test_x_1d, y = y_tilde, split = True)
     target = [int(elem) for elem in target]
+    y_tilde_train_onehot = np.column_stack((1 - y_tilde_train, y_tilde_train))
+    y_tilde_onehot = np.column_stack((1 - y_tilde, y_tilde))
     
+    # Print metrics
     print('Number of epochs: ', int(Niterations/m))
-    print('Training set accuracy is: ', statistics.calc_accuracy(target_train, y_tilde_train, rescaled = True))
-    print('Test set accuracy is: ', statistics.calc_accuracy(target, y_tilde, rescaled = True))
-    train_rocauc = roc_auc_score(target_train, y_tilde_train)
-    test_rocauc = roc_auc_score(target, y_tilde)
-    print('Training roc-auc score is: ', train_rocauc)
-    print('Test roc-auc score is: ', test_rocauc)
+    print('Training set accuracy is: ', accuracy_score(target_train, np.argmax(y_tilde_train_onehot, axis = 1)))
+    print('Test set accuracy is: ', accuracy_score(target, np.argmax(y_tilde_onehot, axis = 1)))
+    print('Training roc-auc score is: ', roc_auc_score(target_train, y_tilde_train))
+    print('Test roc-auc score is: ', roc_auc_score(target, y_tilde))
+    max_area_ratio_train = statistics.calc_cumulative_auc(target_train, make_onehot(target_train))
+    max_area_ratio_test = statistics.calc_cumulative_auc(target, make_onehot(target))
+    
+    print('Training area ratio is: ', (statistics.calc_cumulative_auc(target_train, y_tilde_train_onehot) - 0.5)/(max_area_ratio_train - 0.5))
+    print('Test area ratio is: ', (statistics.calc_cumulative_auc(target, y_tilde_onehot) - 0.5)/(max_area_ratio_test - 0.5))
 
 
 
