@@ -94,7 +94,7 @@ class fit():
                 compl_prob = sigmoid(-y_tilde_iter)
                 gradients =  - np.transpose(X) @ (y - prob)
                 
-                beta -= eta*gradients
+                beta -= eta*gradients * 2./len(y_tilde_iter)
                 
                 if verbose:
                     # Cost function
@@ -110,6 +110,9 @@ class fit():
             #implement own stochastic gradient descent
             self.inst.sort_in_k_batches(m, random=True, minibatches = True)
             
+            t0 = 1.0
+            t1 = t0/eta
+            #eta = t0/t1
             epochs = int(Niteration / m)
             beta = np.ones((p, 1))
             for epoch in range(1, epochs + 1):
@@ -130,7 +133,13 @@ class fit():
                     compl_prob = sigmoid(-y_tilde_iter)
                     gradients =  - X.T @ (y - prob)
                     
+                    t = epoch*m+i
+                    eta = t0/(t+t1)
+                    
                     beta -= eta*gradients * 2./len(y_tilde_iter)
+                    
+                    
+                    
                     
                     if verbose:
                         # Cost function

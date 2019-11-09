@@ -11,12 +11,25 @@ from sklearn import datasets
 #k-fold cross validation parameters
 CV = True
 k = 5
+
+# Regression Parameters
 method = 'logreg'
+
+#Change this to 'GD' to obtain the Gradient descent results, to 'SGD' to obtain
+#the Stochastic gradient descent result, or to 'skl-SGD' to use the scikit-learn algorithm
+desc_method = 'SGD' 
+
+#This is eta0, or learning rate.
+input_eta = 0.1
+
+#Degree 0 because it's a classification and not a polynomial
 deg = 0
+
 
 #Stochastic gradient descent parameters
 m = 20           #Number of minibatches
 Niterations = 5000
+
 
 #Random dataset or Credit card?
 randomdataset = False
@@ -60,7 +73,7 @@ if CV:
     # Run k-fold CV algorithm and fit models.
     sample = sampling(CDds)
     liste2 = [sample]
-    sample.kfold_cross_validation(method, deg=deg, descent_method = 'GD', eta = 0.1, Niterations = Niterations, m = m)
+    sample.kfold_cross_validation(method, deg=deg, descent_method = desc_method, eta = input_eta, Niterations = Niterations, m = m)
     
     # Print metrics
     print('Number of epochs: ', int(Niterations/m))
@@ -75,7 +88,7 @@ if CV:
 else:
     #Dont run k-fold CV
     
-    y_tilde_train, betas = model.fit_design_matrix_logistic_regression(descent_method = 'GD', eta = 0.1, Niteration = Niterations, m = m)
+    y_tilde_train, betas = model.fit_design_matrix_logistic_regression(descent_method = desc_method, eta = input_eta, Niteration = Niterations, m = m)
     _, target_train = CDds.rescale_back(x = CDds.x_1d, y = CDds.y_1d, split = True)
     target_train = [int(elem) for elem in target_train]
     

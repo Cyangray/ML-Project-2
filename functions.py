@@ -60,7 +60,7 @@ def sigmoid(x):
     return 1. / (1. + np.exp(-x))
 
 def softmax(x):
-    '''The softmax activation function.'''
+    '''The (normalized) softmax activation function.'''
     exp_term = np.exp(x)
     return exp_term / np.sum(exp_term, axis=1, keepdims=True)
 
