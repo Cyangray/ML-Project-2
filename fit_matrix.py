@@ -3,7 +3,6 @@ import sys
 from sklearn import preprocessing
 from sklearn.linear_model import Lasso, SGDRegressor
 from functions import sigmoid, softmax
-
 import statistical_functions as statistics
 
 class fit():
@@ -75,7 +74,6 @@ class fit():
             if verbose:
                 # Cost function
                 m = self.X.shape[0]
-                #cost = -(1 / m) * np.sum(y * np.log(prob) + (1 - y) * np.log(compl_prob))
                 cost = - (1 / m) * np.sum(self.inst.y_1d.ravel() * self.y_tilde + np.log(sigmoid(-self.y_tilde)))
                 print('cost is', cost)
                 
@@ -157,7 +155,7 @@ class fit():
         """Method that uses the design matrix to find the coefficients beta, and
         thus the prediction y_tilde"""
         X = self.X
-        y = self.y
+        y = self.inst.y_1d.ravel()
         
         beta = np.linalg.pinv(X.T.dot(X)).dot(X.T).dot(y)
         
@@ -168,16 +166,16 @@ class fit():
         """Method that uses the design matrix to find the coefficients beta with 
         the ridge method, and thus the prediction y_tilde"""
         X = self.X
-        y = self.y
+        y = self.inst.y_1d.ravel()
 
         beta = np.linalg.pinv(X.T.dot(X) + lambd*np.identity(self.l)).dot(X.T).dot(y)
         y_tilde = X @ beta
         return y_tilde, beta
 
-    def fit_design_matrix_lasso(self, lambd):
+    def fit_design_matrix_lasso(self, lambd, maxiter = 10e5):
         """The lasso regression algorithm implemented from scikit learn."""
-        lasso = Lasso(alpha = lambd, max_iter = 10e5, tol = 0.01, normalize= (not self.inst.normalized), fit_intercept=(not self.inst.normalized))
-        lasso.fit(self.X,self.y)
+        lasso = Lasso(alpha = lambd, max_iter = maxiter, tol = 0.01, normalize= (not self.inst.normalized), fit_intercept=(not self.inst.normalized))
+        lasso.fit(self.X,self.inst.y_1d.ravel())
         beta = lasso.coef_
         y_tilde = self.X@beta
         return y_tilde, beta

@@ -16,7 +16,7 @@ import seaborn as sns
 #k-fold cross validation parameters
 CV = False
 k = 5
-np.random.seed(0)
+np.random.seed(1234)
 
 #Stochastic gradient descent parameters
 m = 20           #Number of minibatches
@@ -52,10 +52,8 @@ n_samples = X_train.shape[0]
 ###### grid search #######
 
 #Initialize vectors for saving values
-eta_vals = np.logspace(-3, 0, 10)
-#eta_vals = np.linspace(1e-6, 1e-3, 10)
-lmbd_vals = np.logspace(-6, 1, 8)
-FFNN_numpy = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
+eta_vals = np.logspace(-6, 0, 7)
+lmbd_vals = np.hstack((np.array([0]), np.logspace(-6, 0, 7)))
 train_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
 test_mse = np.zeros((len(eta_vals), len(lmbd_vals)))
 train_R2 = np.zeros((len(eta_vals), len(lmbd_vals)))
@@ -75,7 +73,7 @@ for i, eta in enumerate(eta_vals):
                              eta = eta,
                              lmbd = lmbd,
                              input_activation = 'tanh',
-                             output_activation = 'softmax',
+                             output_activation = 'linear',
                              cost_function = 'MSE')
         ffnn.add_layer(20, activation_method = 'tanh')
         ffnn.add_layer(20, activation_method = 'tanh')

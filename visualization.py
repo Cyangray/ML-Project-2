@@ -18,7 +18,7 @@ def plot_features(dataset):
     output_labels = dataset.output_labels
     
     #Plot continuous features
-    fig, axes = plt.subplots(cont_rows, cont_cols, figsize=(10,20))
+    fig, axes = plt.subplots(cont_rows, cont_cols, figsize=(10,17))
     ax = axes.ravel()
     
     continuous_features_idxs = dataset.continuous_features_idxs
@@ -28,9 +28,11 @@ def plot_features(dataset):
         ax[graph].hist([targ0[:,i], targ1[:,i]], bins = bins, stacked = True)
         ax[graph].set_title(dataset.feature_names[i])
         ax[graph].set_yticks(())
-    ax[0].set_xlabel("Feature magnitude")
-    ax[0].set_ylabel("Frequency")
-    ax[0].legend(output_labels, loc ="best")
+        if i > 1:
+            ax[graph].xaxis.set_major_locator(plt.MaxNLocator(3))
+    ax[-1].set_xlabel("Feature magnitude")
+    ax[-1].set_ylabel("Frequency")
+    ax[-1].legend(output_labels, loc ="best")
     fig.tight_layout()
     plt.show()
     
@@ -76,7 +78,7 @@ def plot_features(dataset):
 
 
 def plot_correlation_matrix(normalized_dataset):
-    fig = plt.subplots()
+    fig = plt.subplots(figsize=(15,15))
     correlation_matrix = normalized_dataset.df.corr().round(1)
     # use the heatmap function from seaborn to plot the correlation matrix
     # annot = True to print the values inside the square
@@ -85,7 +87,7 @@ def plot_correlation_matrix(normalized_dataset):
 
 
 def plot_3d(x, y, z, an_x, an_y, an_z):
-    fig = plt.figure(figsize = (10, 10))
+    fig = plt.figure(figsize = (15, 10))
     ax = fig.gca(projection='3d')
     ax.set_title("The franke function model and analytical solution.", fontsize=22)
     

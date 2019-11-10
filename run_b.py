@@ -8,7 +8,7 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn import datasets
 
 #k-fold cross validation parameters
-CV = False
+CV = True
 k = 5
 
 # Regression Parameters
@@ -19,7 +19,7 @@ method = 'logreg'
 desc_method = 'skl-SGD' 
 
 #This is eta0, or learning rate.
-input_eta = 0.01
+input_eta = 0.1
 
 #Degree 0 because it's a classification and not a polynomial
 deg = 0
@@ -31,7 +31,7 @@ Niterations = 5000
 
 
 #Random dataset or Credit card?
-randomdataset = True
+randomdataset = False
 
 #Get random seed
 np.random.seed(1234)

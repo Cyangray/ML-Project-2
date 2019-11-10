@@ -59,7 +59,8 @@ class dataset():
         self.x_1d_unscaled = self.x_1d.copy()
         self.y_1d_unscaled = self.y_1d.copy()
         dataset_matrix = self.values
-        self.scaler = preprocessing.MinMaxScaler().fit(dataset_matrix)
+        #self.scaler = preprocessing.MinMaxScaler().fit(dataset_matrix)
+        self.scaler = preprocessing.StandardScaler().fit(dataset_matrix)
         transformed_matrix = self.scaler.transform(dataset_matrix)
         self.x_1d = transformed_matrix[:,:-1]
         self.y_1d = transformed_matrix[:,-1]
