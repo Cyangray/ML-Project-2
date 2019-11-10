@@ -1,24 +1,21 @@
 import numpy as np
-from visualization import plot_features, plot_correlation_matrix, show_heatmaps
+from visualization import show_heatmaps
 from dataset_objects import dataset, credit_card_dataset
-from fit_matrix import fit
 import statistical_functions as statistics
-from sampling_methods import sampling
 from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn import datasets
-from functions import make_onehot, inverse_onehot
-from neural_network import NeuralNetwork, layer
-import seaborn as sns
-import matplotlib.pyplot as plt
+from functions import make_onehot
+from neural_network import NeuralNetwork
 
 #random dataset, or credit card?
-randomdataset = True
+randomdataset = False
 
 #Stochastic gradient descent parameters
 m = 20           #Number of minibatches
 Niterations = 1000
 n_samples = 100000      #Only for generation of random dataset
 
+#Get random seed
 np.random.seed(1234)
 
 if randomdataset:
@@ -71,10 +68,6 @@ test_area_ratio = np.zeros((len(eta_vals), len(lmbd_vals)))
 _, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
 target = [int(elem) for elem in target]
 
-#Prepare for calculating the Area ratio metric
-max_area_train = statistics.calc_cumulative_auc(y_train, y_train_onehot)
-max_area_test = statistics.calc_cumulative_auc(target, make_onehot(target))
-
 #Loop through the etas and lambdas
 for i, eta in enumerate(eta_vals):
     for j, lmbd in enumerate(lmbd_vals):
@@ -107,8 +100,8 @@ for i, eta in enumerate(eta_vals):
         test_accuracy[i][j] = accuracy_score(target, y_tilde_1d)
         train_rocauc[i][j] = roc_auc_score(y_train_onehot, y_tilde_train)
         test_rocauc[i][j] = roc_auc_score(make_onehot(target), y_tilde)
-        train_area_ratio[i][j] = (statistics.calc_cumulative_auc(y_train, y_tilde_train) - 0.5)/(max_area_train - 0.5)
-        test_area_ratio[i][j] = (statistics.calc_cumulative_auc(target, y_tilde) - 0.5)/(max_area_test - 0.5)
+        train_area_ratio[i][j] = statistics.calc_area_ratio(y_train, y_tilde_train)
+        test_area_ratio[i][j] = statistics.calc_area_ratio(target, y_tilde)
         
         #print some outputs for each run of the loop
         print('Learning rate: ', eta)

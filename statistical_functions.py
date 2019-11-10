@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.metrics import r2_score, roc_auc_score
 import scikitplot as skplt
+from functions import make_onehot
 
 def calc_MSE(y, y_tilde):
     mse = 0
@@ -43,6 +44,10 @@ def calc_cumulative_auc(target, pred):
     area = np.trapz(y_data, x = x_data)
     return area
     
+def calc_area_ratio(target,pred):
+    max_area = calc_cumulative_auc(target, make_onehot(target))
+    auc = calc_cumulative_auc(target, pred)
+    return (auc - 0.5)/(max_area - 0.5)
 
 def print_mse(mse):
     print("Average mse: ", np.average(mse))
@@ -52,13 +57,9 @@ def print_R2(R2):
     print("Average R2: ", np.average(R2))
     print("Best R2: ", R2[np.argmax(np.array(R2))])
     
-def calc_accuracy(target, y_tilde, rescaled = False):
+def calc_accuracy(target, y_tilde, threshold = 0.5):
     '''Take as input the modeled y_tilde and the correct values target, returns the
     accuracy of the model'''
-    if rescaled:
-        threshold = 0.5
-    else:
-        threshold = 0
         
     y10 = np.zeros(np.shape(y_tilde))
     right_guesses = 0

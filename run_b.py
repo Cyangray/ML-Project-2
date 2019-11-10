@@ -1,12 +1,11 @@
 import numpy as np
-from functions import make_onehot, softmax, sigmoid
+from functions import make_onehot, sigmoid
 from dataset_objects import dataset, credit_card_dataset
 from fit_matrix import fit
 import statistical_functions as statistics
 from sampling_methods import sampling
 from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn import datasets
-
 
 #k-fold cross validation parameters
 CV = False
@@ -17,10 +16,10 @@ method = 'logreg'
 
 #Change this to 'GD' to obtain the Gradient descent results, to 'SGD' to obtain
 #the Stochastic gradient descent result, or to 'skl-SGD' to use the scikit-learn algorithm
-desc_method = 'SGD' 
+desc_method = 'skl-SGD' 
 
 #This is eta0, or learning rate.
-input_eta = 1.
+input_eta = 0.01
 
 #Degree 0 because it's a classification and not a polynomial
 deg = 0
@@ -32,9 +31,9 @@ Niterations = 5000
 
 
 #Random dataset or Credit card?
-randomdataset = False
+randomdataset = True
 
-#put random seed
+#Get random seed
 np.random.seed(1234)
 
 
@@ -50,7 +49,6 @@ else:
     #Importing the credit card dataset
     filename = "credit_card_data_set.xls"
     CDds = credit_card_dataset(filename)
-    liste = [CDds]
     
     #polishing the dataset, and divide into data and target data
     CDds.CreditCardPolish()
@@ -106,8 +104,8 @@ else:
     
     # Print metrics
     print('Number of epochs: ', int(Niterations/m))
-    print('Training set accuracy is: ', accuracy_score(target_train, np.argmax(y_tilde_train_onehot, axis = 1)))
-    print('Test set accuracy is: ', accuracy_score(target, np.argmax(y_tilde_onehot, axis = 1)))
+    print('Training set accuracy is: ', statistics.calc_accuracy(target_train, np.argmax(y_tilde_train_onehot, axis = 1)))
+    print('Test set accuracy is: ', statistics.calc_accuracy(target, np.argmax(y_tilde_onehot, axis = 1)))
     print('Training roc-auc score is: ', roc_auc_score(target_train, y_tilde_train))
     print('Test roc-auc score is: ', roc_auc_score(target, y_tilde))
     

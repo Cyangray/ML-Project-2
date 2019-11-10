@@ -68,14 +68,10 @@ class fit():
         
         n, p = np.shape(self.X)
         if descent_method == 'skl-SGD':
-            if self.inst.normalized:
-                fit_intercept = False
-            else:
-                fit_intercept = True
-            sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=eta, fit_intercept = fit_intercept)
+            sgdreg = SGDRegressor(max_iter = 50, penalty=None, eta0=eta, fit_intercept = True)
             sgdreg.fit(self.X, self.inst.y_1d.ravel())
             self.betas = sgdreg.coef_
-            self.y_tilde = sigmoid(self.X@self.betas)
+            self.y_tilde = sigmoid(self.X@self.betas + sgdreg.intercept_)
             if verbose:
                 # Cost function
                 m = self.X.shape[0]

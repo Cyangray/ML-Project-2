@@ -57,6 +57,7 @@ class NeuralNetwork:
         current_layer.create_biases_and_weights()
         
     def close_last_layer(self):
+        # Create output attributes for last layer
         last_layer = self.layers[-1]
         last_layer.output_weights = np.random.randn(last_layer.n_hidden_neurons, self.n_categories)
         last_layer.output_bias = np.zeros(self.n_categories) + 0.01
@@ -97,9 +98,9 @@ class NeuralNetwork:
         return probabilities
 
     def backpropagation(self):
-        #Backpropagating algorithm
+        # Backpropagating algorithm
         
-        # Calculate output error, according to chosen cost function and activation
+        # Calculate output error according to chosen cost function and activation
         # function for the output layer
         last_layer = self.layers[-1]
         if ((last_layer.out_activation_method == 'softmax' or last_layer.out_activation_method == 'sigmoid') and self.C == 'cross_entropy') or (last_layer.out_activation_method == 'linear' and self.C == 'MSE'):
@@ -111,18 +112,19 @@ class NeuralNetwork:
         last_layer.output_weights_gradient = np.matmul(last_layer.a_h.T, error_output)
         last_layer.output_bias_gradient = np.sum(error_output, axis=0)
         
+        # Add regularization parameter
         if self.lmbd > 0.0:
             last_layer.output_weights_gradient += self.lmbd * last_layer.output_weights
         
-        #Update the output weights and biases
+        # Update the output weights and biases
         eta = self.eta / self.batch_size
         last_layer.output_weights -= eta * last_layer.output_weights_gradient
         last_layer.output_bias -= eta * last_layer.output_bias_gradient
         
         #Loop through the layers backwards in order to update the weights
         for i, current_layer in reversed(list(enumerate(self.layers))):
-            #Check if we are evaluating the last or the first layer, as some variables will
-            #point to different things, similarly as with the feed_forward algorithm
+            # Check if we are evaluating the last or the first layer, as some variables will
+            # point to different things, similarly as with the feed_forward algorithm
             if current_layer == last_layer:
                 forward_error = error_output
                 forward_weights = last_layer.output_weights
@@ -135,16 +137,16 @@ class NeuralNetwork:
             else:
                 previous_a_h = self.layers[i-1].a_h
             
-            #calculate the error in the hidden weights, and update the gradients
-            #current_layer.error_hidden = np.matmul(forward_error, forward_weights.T) * current_layer.f_prime(current_layer.z_h)
+            # Calculate the error in the hidden weights, and update the gradients
             current_layer.error_hidden = np.matmul(forward_error, forward_weights.T) * current_layer.f_prime(current_layer.z_h)
             current_layer.hidden_weights_gradient = np.matmul(previous_a_h.T, current_layer.error_hidden)
             current_layer.hidden_bias_gradient = np.sum(current_layer.error_hidden, axis=0)
-        
+            
+            # Add regularization parameter
             if self.lmbd > 0.0:
                 current_layer.hidden_weights_gradient += self.lmbd * current_layer.hidden_weights
             
-            #Update the weights and the biases
+            # Update the weights and the biases
             current_layer.hidden_weights -= self.eta * current_layer.hidden_weights_gradient
             current_layer.hidden_bias -= self.eta * current_layer.hidden_bias_gradient
 

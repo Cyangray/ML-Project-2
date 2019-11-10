@@ -75,7 +75,7 @@ for i, eta in enumerate(eta_vals):
                              eta = eta,
                              lmbd = lmbd,
                              input_activation = 'tanh',
-                             output_activation = 'tanh',
+                             output_activation = 'softmax',
                              cost_function = 'MSE')
         ffnn.add_layer(20, activation_method = 'tanh')
         ffnn.add_layer(20, activation_method = 'tanh')
