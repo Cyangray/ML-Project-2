@@ -9,7 +9,7 @@ from sklearn import datasets
 
 
 #k-fold cross validation parameters
-CV = True
+CV = False
 k = 5
 
 # Regression Parameters
@@ -20,7 +20,7 @@ method = 'logreg'
 desc_method = 'SGD' 
 
 #This is eta0, or learning rate.
-input_eta = 0.1
+input_eta = 1.
 
 #Degree 0 because it's a classification and not a polynomial
 deg = 0
@@ -34,6 +34,7 @@ Niterations = 5000
 #Random dataset or Credit card?
 randomdataset = False
 
+#put random seed
 np.random.seed(1234)
 
 
@@ -87,16 +88,19 @@ if CV:
     
 else:
     #Dont run k-fold CV
-    
+    #collect information about training set
     y_tilde_train, betas = model.fit_design_matrix_logistic_regression(descent_method = desc_method, eta = input_eta, Niteration = Niterations, m = m)
     _, target_train = CDds.rescale_back(x = CDds.x_1d, y = CDds.y_1d, split = True)
     target_train = [int(elem) for elem in target_train]
     
+    #collect information about test set
     X_test = model.create_design_matrix(x = CDds.test_x_1d)
     y_tilde = sigmoid(model.test_design_matrix(betas, X = X_test))
     _, target = CDds.rescale_back(x = CDds.test_x_1d, y = CDds.test_y_1d, split = True)
     _, y_tilde_scaled = CDds.rescale_back(x = CDds.test_x_1d, y = y_tilde, split = True)
     target = [int(elem) for elem in target]
+    
+    #Make onehot version of results
     y_tilde_train_onehot = np.column_stack((1 - y_tilde_train, y_tilde_train))
     y_tilde_onehot = np.column_stack((1 - y_tilde, y_tilde))
     
@@ -106,9 +110,9 @@ else:
     print('Test set accuracy is: ', accuracy_score(target, np.argmax(y_tilde_onehot, axis = 1)))
     print('Training roc-auc score is: ', roc_auc_score(target_train, y_tilde_train))
     print('Test roc-auc score is: ', roc_auc_score(target, y_tilde))
+    
     max_area_ratio_train = statistics.calc_cumulative_auc(target_train, make_onehot(target_train))
     max_area_ratio_test = statistics.calc_cumulative_auc(target, make_onehot(target))
-    
     print('Training area ratio is: ', (statistics.calc_cumulative_auc(target_train, y_tilde_train_onehot) - 0.5)/(max_area_ratio_train - 0.5))
     print('Test area ratio is: ', (statistics.calc_cumulative_auc(target, y_tilde_onehot) - 0.5)/(max_area_ratio_test - 0.5))
 

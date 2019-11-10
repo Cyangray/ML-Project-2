@@ -85,13 +85,13 @@ def plot_correlation_matrix(normalized_dataset):
 
 
 def plot_3d(x, y, z, an_x, an_y, an_z):
-    fig = plt.figure()
+    fig = plt.figure(figsize = (10, 10))
     ax = fig.gca(projection='3d')
     ax.set_title("The franke function model and analytical solution.", fontsize=22)
     
     # Surface of analytical solution.
     #surf = ax.plot_trisurf(an_x, an_y, an_z, cmap=cm.coolwarm)
-    surf = ax.plot_surface(an_x, an_y, an_z, cmap=cm.coolwarm)
+    surf = ax.plot_surface(an_x, an_y, an_z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
     surf_2 = ax.scatter(x, y, z)
 
     # Customize the z axis.

@@ -15,7 +15,7 @@ class NeuralNetwork:
             regression = False,
             input_activation = 'sigmoid',
             output_activation = 'softmax',
-            cost_function = 'classification'):
+            cost_function = 'cross-entropy'):
         '''input activation can take the values: 'sigmoid', 'softmax', 'linear',
         'tanh' og 'relu'. The same for the output_activation.
         cost_function can be for 'classification' purposes and for 'regression' purposes.'''
@@ -102,7 +102,7 @@ class NeuralNetwork:
         # Calculate output error, according to chosen cost function and activation
         # function for the output layer
         last_layer = self.layers[-1]
-        if ((last_layer.out_activation_method == 'softmax' or last_layer.out_activation_method == 'sigmoid') and self.C == 'classification') or (last_layer.out_activation_method == 'linear' and self.C == 'regression'):
+        if ((last_layer.out_activation_method == 'softmax' or last_layer.out_activation_method == 'sigmoid') and self.C == 'cross_entropy') or (last_layer.out_activation_method == 'linear' and self.C == 'MSE'):
             error_output = (last_layer.a_o - self.Y_data)
         else:
             error_output = last_layer.f_prime(last_layer.z_o, method = last_layer.out_activation_method) * dCda(self.Y_data, last_layer.a_o, method = self.C)

@@ -39,8 +39,10 @@ class dataset():
         if self.noise != 0:
             self.y_1d += np.random.randn(n*n) * self.noise
     
-    '''Divide the DataFrame into data and target.'''
     def polish_and_divide(self, targetcol = -1, headercols = 0):
+        '''Divide the DataFrame into data and target.
+        targetcol points to the column containing the targets,
+        headercols indicates whether some columns should be skipped from the dataset.'''
         headerrows = self.header
         if self.pandas_df:
             self.values = np.copy(self.df.to_numpy())
@@ -104,7 +106,6 @@ class dataset():
         else:
             '''shuffles randomly and splits into train and test.'''
             split = np.arange(self.N)
-            #np.random.seed(5)
             np.random.shuffle(split)
             self.training_indices = split[N_test:]
             self.test_indices = split[:N_test]
@@ -117,17 +118,9 @@ class dataset():
         validation. Recommended numbers are k = 3, 4 or 5. "random" sorts the
         dataset randomly. if random==False, it sorts them statistically"""
             
-        if minibatches:
-            self.m = k
-            self.m_idxs = [[] for i in range(k)]
-        else:
-            self.k = k
-            self.k_idxs = [[] for i in range(k)]
-            
         idx = 0
         N = self.N
-        
-        
+        batches_idxs = [[] for i in range(k)]
         limits = [i/k for i in range(k+1)]
         
         if random:
@@ -138,10 +131,7 @@ class dataset():
                 random_number = np.random.rand()
                 for i in range(k):
                     if limits[i] <= random_number < limits[i+1]:
-                        if minibatches:
-                            self.m_idxs[i].append(idx)
-                        else:
-                            self.k_idxs[i].append(idx)
+                        batches_idxs[i].append(idx)
                         break
                 idx += 1
             
@@ -152,10 +142,14 @@ class dataset():
             #exp_limits = [elem * N for elem in limits] 
             limits = [int(elem*N) for elem in limits]
             for i in range(k):
-                if minibatches:
-                    self.m_idxs[i].append( split[limits[i] : limits[i+1]] )
-                else:
-                    self.k_idxs[i].append( split[limits[i] : limits[i+1]] )
+                batches_idxs[i] = split[limits[i] : limits[i+1]]
+                
+        if minibatches:
+            self.m = k
+            self.m_idxs = batches_idxs
+        else:
+            self.k = k
+            self.k_idxs = batches_idxs
                 
     def sort_training_test_kfold(self, i):
         """After sorting the dataset into k batches, pick one of them and this one 

@@ -36,7 +36,7 @@ class fit():
             self.X = x
         return self.X 
         
-    def create_polynomial_design_matrix(self, x=0, N=0, deg=17):
+    def create_polynomial_design_matrix(self, x=0, N=0, deg=0):
         ''' Create a polynomial design matrix from a matrix of data. If x = 0, it will
         use the x_1d attribute of the imported dataset'''
         
@@ -63,6 +63,7 @@ class fit():
     def fit_design_matrix_logistic_regression(self, descent_method = 'SGD-skl', eta = 0.001, Niteration = 200, m = 5, verbose = False):
         '''solve the model using logistic regression. 
         Method 'SGD-skl' for SGD scikit-learn,
+        method 'SGD' for SGD with diminishing step length with minibatches,
         method 'GD' for plain gradient descent'''
         
         n, p = np.shape(self.X)
@@ -85,21 +86,25 @@ class fit():
             return self.y_tilde, sgdreg.coef_
         
         elif descent_method == 'GD':
+            #implement own gradient descent algorithm
             beta = np.ones((p, 1))
             X = self.X
             y = self.inst.y_1d[:, np.newaxis]
             for iter in range(Niteration):
+                #Calculate probabilities
                 y_tilde_iter = X @ beta
                 prob = sigmoid(y_tilde_iter)
                 compl_prob = sigmoid(-y_tilde_iter)
-                gradients =  - np.transpose(X) @ (y - prob)
                 
+                #Calculate gradients
+                gradients =  - X.T @ (y - prob)
+                
+                #Update parameters
                 beta -= eta*gradients * 2./len(y_tilde_iter)
                 
                 if verbose:
                     # Cost function
                     m = X.shape[0]
-                    #cost = -(1 / m) * np.sum(y * np.log(prob) + (1 - y) * np.log(compl_prob))
                     cost = - (1 / m) * np.sum(y * y_tilde_iter + np.log(compl_prob))
                     print('cost is', cost)
             self.betas = beta
@@ -107,44 +112,44 @@ class fit():
             return self.y_tilde, self.betas
         
         elif descent_method == 'SGD':
-            #implement own stochastic gradient descent
+            #implement own stochastic gradient descent algorithm
             self.inst.sort_in_k_batches(m, random=True, minibatches = True)
             
+            #initialize step length. The step will start from the input value of
+            #eta and will diminish at the rate of t0/(t + t1) where t = epoch*m + i
             t0 = 1.0
             t1 = t0/eta
-            #eta = t0/t1
+            X = self.X
+            y = self.inst.y_1d[:, np.newaxis]
             epochs = int(Niteration / m)
             beta = np.ones((p, 1))
-            for epoch in range(1, epochs + 1):
+            for epoch in range(0, epochs + 0):
                 for i in range(m):
                     
-                    #Pick random minibatch
+                    # Pick random minibatch
                     minibatch_k = np.random.randint(m)
                     minibatch_data_idxs = self.inst.m_idxs[minibatch_k]
-                    minibatch_data = self.inst.values[minibatch_data_idxs]
-                    minibatch_x_1d = minibatch_data[:,:-1]
-                    minibatch_y_1d = minibatch_data[:,-1]
+                    X_k = X[minibatch_data_idxs,:]
+                    y_k = y[minibatch_data_idxs]
                     
-                    
-                    X = minibatch_x_1d
-                    y = minibatch_y_1d[:,np.newaxis]
-                    y_tilde_iter = X @ beta
+                    # Calculate probabilities
+                    y_tilde_iter = X_k @ beta
                     prob = sigmoid(y_tilde_iter)
                     compl_prob = sigmoid(-y_tilde_iter)
-                    gradients =  - X.T @ (y - prob)
                     
+                    # Evaluate gradients
+                    gradients =  - X_k.T @ (y_k - prob)
+                    
+                    # Update steplength
                     t = epoch*m+i
                     eta = t0/(t+t1)
                     
+                    # Adjust parameters
                     beta -= eta*gradients * 2./len(y_tilde_iter)
-                    
-                    
-                    
                     
                     if verbose:
                         # Cost function
                         m = X.shape[0]
-                        #cost = -(1 / m) * np.sum(y * np.log(prob) + (1 - y) * np.log(compl_prob))
                         cost = - (1 / m) * np.sum(y * y_tilde_iter + np.log(compl_prob))
                         print('cost is', cost)
             self.betas = beta

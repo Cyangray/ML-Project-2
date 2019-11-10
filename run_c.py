@@ -90,7 +90,7 @@ for i, eta in enumerate(eta_vals):
                              lmbd = lmbd,
                              input_activation = 'sigmoid',
                              output_activation = 'softmax',
-                             cost_function = 'classification')
+                             cost_function = 'cross_entropy')
         ffnn.add_layer(20, activation_method = 'sigmoid')
         
         #Train network
