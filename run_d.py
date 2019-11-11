@@ -72,11 +72,11 @@ for i, eta in enumerate(eta_vals):
                              n_hidden_neurons = 20, 
                              eta = eta,
                              lmbd = lmbd,
-                             input_activation = 'tanh',
+                             input_activation = 'sigmoid',
                              output_activation = 'linear',
                              cost_function = 'MSE')
-        ffnn.add_layer(20, activation_method = 'tanh')
-        ffnn.add_layer(20, activation_method = 'tanh')
+        ffnn.add_layer(20, activation_method = 'sigmoid')
+        ffnn.add_layer(20, activation_method = 'sigmoid')
         
         #Train network
         ffnn.train()
@@ -117,7 +117,7 @@ x, y, z = rescaled_dataset[:,0], rescaled_dataset[:,1], rescaled_dataset[:,2]
 
 #generate Franke for plotting
 Frankeplot = dataset(0)
-Frankeplot.generate_franke(100, 0)
+Frankeplot.generate_franke(150, 0)
 an_x, an_y = Frankeplot.x0_mesh, Frankeplot.x1_mesh
 an_z = Frankeplot.y_mesh
 
