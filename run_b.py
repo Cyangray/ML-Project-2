@@ -71,7 +71,6 @@ model.create_simple_design_matrix()
 if CV:
     # Run k-fold CV algorithm and fit models.
     sample = sampling(CDds)
-    liste2 = [sample]
     sample.kfold_cross_validation(method, deg=deg, descent_method = desc_method, eta = input_eta, Niterations = Niterations, m = m)
     
     # Print metrics

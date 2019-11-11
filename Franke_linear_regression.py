@@ -44,7 +44,6 @@ X_train = FrankeModel.create_design_matrix(deg = deg)
 if CV:
     # Run k-fold CV algorithm and fit models.
     sample = sampling(FrankeDS)
-    liste2 = [sample]
     sample.kfold_cross_validation(method, deg=deg, lambd = lambd, Niterations = Niterations)
     
     # Print metrics
