@@ -8,7 +8,7 @@ from sklearn.metrics import roc_auc_score, accuracy_score
 from sklearn import datasets
 
 #k-fold cross validation parameters
-CV = True
+CV = False
 k = 5
 
 # Regression Parameters

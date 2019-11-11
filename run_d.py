@@ -98,11 +98,9 @@ for i, eta in enumerate(eta_vals):
             best_y_tilde_test = y_tilde_test
             
         
-        #print some outputs
+        #print metrics
         print('Learning rate: ', eta)
         print('lambda: ', lmbd)
-        #print('rocauc: ', test_rocauc[i][j])
-        #print('accuracy: ', test_accuracy[i][j])
         print('Train. mse = ', train_mse[i][j], 'R2 = ', train_R2[i][j])
         print('Test. mse = ', test_mse[i][j], 'R2 = ', test_R2[i][j])
         print('\n')

@@ -53,8 +53,6 @@ y_train_onehot = make_onehot(y_train)
 
 #Initialize vectors for saving values
 eta_vals = np.logspace(-6, 0, 7)
-#eta_vals = np.linspace(1e-5, 1e-1, 7) #7
-#lmbd_vals = np.logspace(-6, 0, 7) #7
 lmbd_vals = np.hstack((np.array([0]), np.logspace(-6, 0, 7)))
 FFNN_numpy = np.zeros((len(eta_vals), len(lmbd_vals)), dtype=object)
 train_accuracy = np.zeros((len(eta_vals), len(lmbd_vals)))
