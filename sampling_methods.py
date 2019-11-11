@@ -38,9 +38,9 @@ class sampling():
             
             if method == 'OLS':
                 y_train, beta_train = self.design_matrix.fit_design_matrix_numpy()
-            elif method == "ridge":
+            elif method == "Ridge":
                 y_train, beta_train = self.design_matrix.fit_design_matrix_ridge(lambd)
-            elif method == "lasso":
+            elif method == "LASSO":
                 y_train, beta_train = self.design_matrix.fit_design_matrix_lasso(lambd, maxiter = Niterations)
             elif method == 'logreg':
                 y_train, beta_train = self.design_matrix.fit_design_matrix_logistic_regression(descent_method = descent_method, eta = eta, Niteration = Niterations, m = m, verbose = verbose)

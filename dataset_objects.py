@@ -34,10 +34,11 @@ class dataset():
         self.x_1d[:,0] = np.ravel(self.x0_mesh)
         self.x_1d[:,1] = np.ravel(self.x1_mesh)
         self.y_1d = np.ravel(self.y_mesh)
-        self.values = np.column_stack((self.x_1d, self.y_1d))
         
         if self.noise != 0:
             self.y_1d += np.random.randn(n*n) * self.noise
+            
+        self.values = np.column_stack((self.x_1d, self.y_1d))
     
     def polish_and_divide(self, targetcol = -1, headercols = 0):
         '''Divide the DataFrame into data and target.
@@ -59,8 +60,7 @@ class dataset():
         self.x_1d_unscaled = self.x_1d.copy()
         self.y_1d_unscaled = self.y_1d.copy()
         dataset_matrix = self.values
-        #self.scaler = preprocessing.MinMaxScaler().fit(dataset_matrix)
-        self.scaler = preprocessing.StandardScaler().fit(dataset_matrix)
+        self.scaler = preprocessing.MinMaxScaler().fit(dataset_matrix)
         transformed_matrix = self.scaler.transform(dataset_matrix)
         self.x_1d = transformed_matrix[:,:-1]
         self.y_1d = transformed_matrix[:,-1]
